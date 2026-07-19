@@ -3,6 +3,9 @@
 A job-search operating system built on [Claude Code](https://claude.com/claude-code). It runs my entire search as a single automated workspace: tailoring applications, tracking every lead and submission, sweeping my inbox for recruiter replies, and publishing the live dashboard in this repo.
 
 **Live dashboard:** [drim1561.github.io/the-pipeline](https://drim1561.github.io/the-pipeline/)
+**Toolkit source:** [github.com/drim1561/the-pipeline-toolkit](https://github.com/drim1561/the-pipeline-toolkit) · **How it works:** [visual walkthrough](https://drim1561.github.io/the-pipeline-how-it-works.html)
+
+This repo hosts only the sanitized demo page; the skills, subagents, hooks, and scripts live in the toolkit repo.
 
 The page you see here is a sanitized shared view. Company and contact names from the live pipeline are scrubbed automatically before every deploy; the numbers, stages, and changelog are real.
 
