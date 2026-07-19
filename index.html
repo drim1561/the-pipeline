@@ -1,1612 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daniel Rim — Job Search Automation System</title>
-  <style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='16'%20cy='16'%20r='12'%20fill='none'%20stroke='%232b50e0'%20stroke-width='4'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='4'%20fill='%23c9511d'/%3E%3C/svg%3E">
+<title>the-pipeline — Insights</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --ink: #1a1d27;
+    --muted: #5d6373;
+    --faint: #d8dbe4;
+    --line: #2b50e0;
+    --line-soft: #dfe5fb;
+    --gate: #c9511d;
+    --gate-soft: #f8e6dc;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+    --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
     :root {
-      --bg:      #0f1117;
-      --surface: #1a1d27;
-      --surface2:#22263a;
-      --border:  #2e3348;
-      --accent:  #6c8cff;
-      --purple:  #a78bfa;
-      --green:   #34d399;
-      --yellow:  #fbbf24;
-      --red:     #f87171;
-      --cyan:    #22d3ee;
-      --text:    #e2e8f0;
-      --muted:   #8892a4;
-      --r:       12px;
+      --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+      --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 17px;
-      line-height: 1.65;
-      padding: 0 0 80px;
-    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --ink: #1a1d27; --muted: #5d6373; --faint: #d8dbe4;
+    --line: #2b50e0; --line-soft: #dfe5fb; --gate: #c9511d; --gate-soft: #f8e6dc;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+    --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
+  }
 
-    /* ───── Top nav tabs ───── */
-    .top-nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #0d1020ee;
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      gap: 0;
-    }
-    .nav-brand {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--muted);
-      padding: 16px 24px 16px 0;
-      margin-right: 12px;
-      border-right: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    .tab-btn {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 18px 20px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color .15s, border-color .15s;
-      white-space: nowrap;
-    }
-    .tab-btn:hover { color: var(--text); }
-    .tab-btn.active { color: #fff; border-bottom-color: var(--accent); }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.7;
+    padding: 4rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; }
 
-    /* ───── Page wrapper ───── */
-    .page { display: none; padding: 52px 24px 0; }
-    .page.active { display: block; }
-    .container { max-width: 960px; margin: 0 auto; }
+  .topbar { display: flex; justify-content: space-between; align-items: baseline;
+            gap: 0.5rem 2rem; flex-wrap: wrap; }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.06em; color: var(--line);
+  }
+  .backlink {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--line); text-underline-offset: 3px;
+  }
+  .topnav { display: flex; gap: 1.6rem; flex-wrap: wrap; }
+  .navcur {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--muted);
+  }
 
-    /* ───── Shared atoms ───── */
-    .section-label {
-      font-size: 11px; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 18px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  /* ---------- next stop ---------- */
+  .nextstop {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-top: 4.5rem; padding: 1.5rem 1.8rem;
+    border: 1px solid var(--faint); border-radius: 12px;
+    text-decoration: none; color: var(--ink);
+  }
+  .nextstop:hover { border-color: var(--line); }
+  .nextstop svg { flex: 0 0 auto; }
+  .nextstop .ns-track { stroke: var(--line); stroke-width: 4; stroke-linecap: round; fill: none; }
+  .nextstop .ns-stop { fill: var(--paper); stroke: var(--line); stroke-width: 3.5; }
+  .nextstop .ns-body { flex: 1 1 auto; min-width: 0; }
+  .nextstop .ns-eyebrow {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600; display: block;
+  }
+  .nextstop .ns-title { font-weight: 650; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .nextstop .ns-sub { display: block; color: var(--muted); font-size: 0.92rem; margin-top: 0.15rem; }
+  .nextstop .ns-arrow {
+    font-family: var(--mono); font-size: 1.5rem; color: var(--line);
+    transition: transform 0.18s ease; flex: 0 0 auto;
+  }
+  .nextstop:hover .ns-arrow { transform: translateX(6px); }
+  @media (max-width: 600px) { .nextstop svg { display: none; } }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.12; font-weight: 650;
+    letter-spacing: -0.02em; margin: 0.75rem 0 1rem; text-wrap: balance;
+    max-width: 22ch;
+  }
+  .dek { font-size: 1.1rem; color: var(--muted); margin: 0; max-width: 38rem; }
+  .dek strong { color: var(--ink); font-weight: 600; }
+  .stamp {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-top: 1.6rem;
+  }
 
-    .pill {
-      display: inline-block; font-size: 11px; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px; letter-spacing: .03em;
-    }
-    .pill-blue   { background:#6c8cff14; color:var(--accent);  border:1px solid #6c8cff30; }
-    .pill-purple { background:#a78bfa14; color:var(--purple);  border:1px solid #a78bfa30; }
-    .pill-green  { background:#34d39914; color:var(--green);   border:1px solid #34d39930; }
-    .pill-yellow { background:#fbbf2414; color:var(--yellow);  border:1px solid #fbbf2430; }
-    .pill-red    { background:#f8717114; color:var(--red);     border:1px solid #f8717130; }
-    .pill-cyan   { background:#22d3ee14; color:var(--cyan);    border:1px solid #22d3ee30; }
+  section { margin-top: 4.5rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600;
+    display: block; margin-bottom: 0.6rem;
+  }
+  h2 {
+    font-size: 1.55rem; font-weight: 650; letter-spacing: -0.015em;
+    margin: 0 0 0.5rem; text-wrap: balance;
+  }
+  .lede { color: var(--muted); margin: 0 0 2rem; max-width: 38rem; }
+  .kicker {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+    display: block; margin: 2.8rem 0 0.4rem;
+  }
 
-    /* ───── Overview page ───── */
-    header {
-      text-align: center;
-      margin-bottom: 60px;
+  /* ---------- transit-line funnel ---------- */
+  .mapbox { overflow-x: auto; margin: 2.5rem -1.25rem 0; padding: 0 1.25rem; }
+  .linemap { min-width: 920px; display: block; }
+  .linemap .track {
+    fill: none; stroke: var(--line); stroke-width: 5; stroke-linecap: round;
+  }
+  .linemap .stop { fill: var(--paper); stroke: var(--line); stroke-width: 4; }
+  .linemap .gatering { fill: var(--paper); stroke: var(--gate); stroke-width: 4; }
+  .linemap .gatecore { fill: var(--gate); }
+  .linemap text {
+    font-family: var(--mono); font-size: 12.5px; fill: var(--ink); font-weight: 600;
+  }
+  .linemap .sub { fill: var(--muted); font-weight: 400; font-size: 11px; }
+  .linemap .cnt { font-size: 21px; font-weight: 700; }
+  .linemap .gatelabel { fill: var(--gate); }
+  @media (prefers-reduced-motion: no-preference) {
+    .linemap .track {
+      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      animation: draw 2.2s cubic-bezier(.4,0,.2,1) 0.2s forwards;
     }
-    .badge-pill {
-      display: inline-block;
-      background: linear-gradient(135deg,#6c8cff1a,#a78bfa1a);
-      border: 1px solid #6c8cff40;
-      color: var(--accent);
-      font-size: 12px; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase;
-      padding: 5px 16px; border-radius: 30px; margin-bottom: 20px;
-    }
-    header h1 {
-      font-size: 34px; font-weight: 800; line-height: 1.2; margin-bottom: 14px;
-      background: linear-gradient(135deg, #fff 40%, #a78bfa);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    header p { color: var(--muted); font-size: 17px; max-width: 600px; margin: 0 auto; }
+    .linemap circle, .linemap text { opacity: 0; animation: appear 0.5s ease forwards; }
+    .linemap .s1 { animation-delay: 0.35s; } .linemap .s2 { animation-delay: 0.65s; }
+    .linemap .s3 { animation-delay: 0.95s; } .linemap .s4 { animation-delay: 1.25s; }
+    .linemap .s5 { animation-delay: 1.55s; } .linemap .s6 { animation-delay: 1.85s; }
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes appear { to { opacity: 1; } }
 
-    .summary {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 28px 32px; margin-bottom: 52px;
-      font-size: 17px; color: #c8d0e0;
-    }
-    .summary p + p { margin-top: 12px; }
-    .summary strong { color: #fff; }
+  /* ---------- monthly bar chart ---------- */
+  .mchart { display: block; margin-top: 1.8rem; max-width: 100%; height: auto; }
+  .mchart .bar { fill: var(--line); }
+  .mchart .base { stroke: var(--faint); stroke-width: 1; }
+  .mchart .v { font-family: var(--mono); font-size: 14px; font-weight: 700; fill: var(--ink); }
+  .mchart .m { font-family: var(--mono); font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
 
-    .kpi-grid-3      { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
-    @media(max-width:700px){ .kpi-grid-3{ grid-template-columns:repeat(2,1fr); } }
+  /* ---------- stat strip ---------- */
+  .statrow {
+    display: flex; flex-wrap: wrap; gap: 0 3.5rem; margin-top: 2rem;
+    border-top: 1px solid var(--faint); border-bottom: 1px solid var(--faint);
+  }
+  .stat { padding: 1.1rem 0 1.25rem; }
+  .stat .fig {
+    font-family: var(--mono); font-size: 1.9rem; font-weight: 700;
+    letter-spacing: -0.02em; line-height: 1.1; display: block;
+  }
+  .stat.gate .fig { color: var(--gate); }
+  .stat .cap {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-top: 0.45rem;
+  }
+  .statrow.hero { margin-top: 3rem; gap: 0 4rem; }
+  .statrow.hero .stat { padding: 1.4rem 0 1.5rem; }
+  .statrow.hero .fig { font-size: clamp(2.1rem, 4.5vw, 2.9rem); }
 
-    .paired-row      { display:grid; grid-template-columns:200px 1fr; gap:14px; margin-bottom:28px; align-items:stretch; }
-    @media(max-width:900px){ .paired-row{ grid-template-columns:1fr; } }
+  /* ---------- tables ---------- */
+  .twrap { overflow-x: auto; }
+  .itable { width: 100%; border-collapse: collapse; margin-top: 0.6rem; font-size: 0.93rem; }
+  .itable th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+    text-align: left; padding: 0.5rem 1.2rem 0.5rem 0; border-bottom: 1px solid var(--faint);
+    white-space: nowrap;
+  }
+  .itable td {
+    padding: 0.6rem 1.2rem 0.6rem 0; border-bottom: 1px solid var(--faint);
+    vertical-align: top;
+  }
+  .itable td.co { font-weight: 650; white-space: nowrap; }
+  .itable td.mut { color: var(--muted); }
+  .itable .num, .itable th.num { font-family: var(--mono); text-align: right;
+    padding-right: 0; white-space: nowrap; }
+  .itable .hot { color: var(--gate); font-weight: 700; }
 
-    .table-card      { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
-    .data-table      { width:100%; border-collapse:collapse; font-size:13px; }
-    .data-table th   { text-align:left; color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; padding:9px 14px; border-bottom:1px solid var(--border); white-space:nowrap; }
-    .data-table td   { padding:9px 14px; border-bottom:1px solid var(--border); color:var(--text); }
-    .data-table tr:last-child td { border-bottom:none; }
-    .data-table tbody tr:hover td { background:#ffffff07; }
-    .data-table a    { color:var(--accent); text-decoration:none; }
-    .data-table a:hover { text-decoration:underline; }
-    .td-muted        { color:var(--muted); font-size:12px; }
-    .td-green        { color:var(--green); font-weight:600; }
-    .table-empty     { padding:20px 14px; color:var(--muted); font-size:13px; font-style:italic; }
-    .table-scroll    { max-height:280px; overflow-y:auto; }
-    .table-scroll::-webkit-scrollbar { width:8px; }
-    .table-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-    .table-scroll .data-table thead th { position:sticky; top:0; background:var(--surface); z-index:1; }
+  /* ---------- meter bars ---------- */
+  .bars { margin-top: 1rem; max-width: 42rem; }
+  .bars .row {
+    display: grid; grid-template-columns: 10rem 1fr 5.5rem; gap: 0 1.1rem;
+    align-items: center; padding: 0.42rem 0;
+  }
+  .bars .lbl { font-size: 0.92rem; white-space: nowrap; overflow: hidden;
+               text-overflow: ellipsis; }
+  .bars .track { display: block; height: 12px; border-radius: 6px; background: var(--line-soft); }
+  .bars .fill { display: block; height: 100%; border-radius: 6px; background: var(--line); min-width: 7px; }
+  .bars .fill.gate { background: var(--gate); }
+  .bars .val { font-family: var(--mono); font-size: 0.78rem; text-align: right;
+               white-space: nowrap; }
+  .bars .val .pct { color: var(--muted); }
 
-    .kpi-card {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
-      padding:22px 20px 18px; position:relative; overflow:hidden;
-    }
-    .kpi-card::before {
-      content:''; position:absolute; top:0; left:0; right:0;
-      height:3px; border-radius:var(--r) var(--r) 0 0;
-    }
-    .kpi-blue::before   { background:var(--accent); }
-    .kpi-purple::before { background:var(--purple); }
-    .kpi-green::before  { background:var(--green);  }
-    .kpi-yellow::before { background:var(--yellow); }
+  /* ---------- journey rail (rounds in play) ---------- */
+  .journey { list-style: none; margin: 1.6rem 0 0; padding: 0; }
+  .journey li {
+    display: grid; grid-template-columns: 3rem 1fr; gap: 0 1rem;
+    position: relative; padding-bottom: 2rem;
+  }
+  .journey li::before {
+    content: ""; position: absolute; left: 1.4rem; top: 0.4rem; bottom: -0.4rem;
+    width: 4px; background: var(--line); border-radius: 2px;
+  }
+  .journey li:last-child::before { bottom: auto; height: 1rem; }
+  .journey .dot {
+    position: relative; z-index: 1; margin-top: 0.35rem;
+    width: 1rem; height: 1rem; border-radius: 50%; justify-self: center;
+    background: var(--paper); border: 4px solid var(--line); box-sizing: border-box;
+    grid-row: 1 / span 2;
+  }
+  .journey h3 {
+    margin: 0; font-size: 1.02rem; font-weight: 650; letter-spacing: -0.005em;
+  }
+  .journey h3 .st {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--line);
+    font-weight: 600; letter-spacing: 0.1em; margin-right: 0.6rem;
+  }
+  .journey p { margin: 0.3rem 0 0; color: var(--muted); max-width: 36rem; font-size: 0.95rem; }
+  .journey h3 .jpay { font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+                      font-weight: 600; margin-left: 0.7rem; white-space: nowrap; }
+  .journey .meta { margin: 0.25rem 0 0; font-family: var(--mono); font-size: 0.72rem;
+                   color: var(--muted); letter-spacing: 0.05em; }
+  .journey li.hot .dot { border-color: var(--gate); box-shadow: 0 0 0 5px var(--gate-soft); }
+  .journey li.hot .meta { color: var(--gate); }
 
-    .kpi-num { font-size:38px; font-weight:800; line-height:1; margin-bottom:6px; }
-    .kpi-blue   .kpi-num { color:var(--accent); }
-    .kpi-purple .kpi-num { color:var(--purple); }
-    .kpi-green  .kpi-num { color:var(--green);  }
-    .kpi-yellow .kpi-num { color:var(--yellow); }
-    .kpi-label { font-size:13px; font-weight:600; color:#fff; margin-bottom:4px; }
-    .kpi-sub   { font-size:12px; color:var(--muted); line-height:1.4; }
+  /* ---------- chart toggle ---------- */
+  .ctabs { display: flex; gap: 0.6rem; margin-top: 1.8rem; }
+  .ctab {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; background: none; border: 1px solid var(--faint);
+    color: var(--muted); padding: 0.35rem 1rem; border-radius: 999px; cursor: pointer;
+  }
+  .ctab:hover { color: var(--ink); }
+  .ctab.active { border-color: var(--line); color: var(--line); }
+  .chartpane[hidden] { display: none; }
 
-    .pipeline-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r); padding:24px 28px; margin-bottom:52px;
-    }
-    .pipeline-title { font-size:14px; font-weight:700; color:#fff; margin-bottom:18px; }
-    .pipeline-stages { display:flex; gap:6px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px; }
-    .stage-block { flex:1; min-width:80px; text-align:center; }
-    .stage-bar { width:100%; border-radius:4px 4px 0 0; min-height:8px; }
-    .stage-name { font-size:11px; color:var(--muted); line-height:1.3; margin-top:6px; }
+  .note {
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.03em; line-height: 1.7; margin-top: 1.2rem; max-width: 46rem;
+  }
 
-    .command-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r); padding:28px 28px 24px; margin-bottom:14px;
-    }
-    .command-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
-    .cmd-badge {
-      font-family:'SF Mono','Fira Code',monospace; font-size:15px; font-weight:700;
-      color:var(--accent); background:#6c8cff14; border:1px solid #6c8cff35;
-      border-radius:8px; padding:6px 14px; white-space:nowrap;
-    }
-    .cmd-headline { font-size:17px; font-weight:700; color:#fff; }
-    .cmd-desc { font-size:15px; color:#b0bbd0; margin-bottom:16px; line-height:1.6; }
-    .step-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; }
-    @media(max-width:600px){ .step-grid{ grid-template-columns:1fr; } }
-    .step-item {
-      display:flex; gap:10px; align-items:flex-start; font-size:14px;
-      color:var(--muted); padding:6px 0; border-top:1px solid var(--border);
-    }
-    .step-num {
-      flex-shrink:0; width:22px; height:22px; border-radius:50%;
-      background:#6c8cff18; border:1px solid #6c8cff30;
-      color:var(--accent); font-size:11px; font-weight:700;
-      display:flex; align-items:center; justify-content:center; margin-top:1px;
-    }
+  footer {
+    margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--faint);
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  }
+  a { color: var(--line); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--line); outline-offset: 3px; }
 
-    .agents-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:52px; }
-    @media(max-width:600px){ .agents-grid{ grid-template-columns:1fr; } }
-    .agent-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r); padding:22px 22px 18px;
-    }
-    .agent-icon { font-size:26px; margin-bottom:12px; display:block; }
-    .agent-name { font-size:16px; font-weight:700; color:#fff; margin-bottom:8px; }
-    .agent-desc { font-size:14px; color:var(--muted); line-height:1.55; margin-bottom:12px; }
-
-    .guard-card {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
-      padding:18px 22px; display:flex; gap:16px; align-items:flex-start; margin-bottom:10px;
-    }
-    .guard-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
-    .guard-body { font-size:15px; color:#b0bbd0; }
-    .guard-body strong { color:#fff; }
-
-    .cost-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:52px; }
-    @media(max-width:600px){ .cost-grid{ grid-template-columns:1fr; } }
-    .cost-card {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
-      padding:24px 24px 20px;
-    }
-    .cost-card h3 {
-      font-size:15px; font-weight:700; color:#fff; margin-bottom:14px;
-      padding-bottom:10px; border-bottom:1px solid var(--border);
-    }
-    .cost-row {
-      display:flex; justify-content:space-between; align-items:center;
-      padding:7px 0; border-bottom:1px solid var(--border);
-      font-size:14px; color:var(--muted);
-    }
-    .cost-row:last-child { border-bottom:none; }
-    .cost-row .val { font-weight:700; color:#fff; }
-    .cost-row .val.green { color:var(--green); }
-    .cost-row .val.yellow { color:var(--yellow); }
-    .cost-note { font-size:12px; color:var(--muted); margin-top:12px; line-height:1.5; font-style:italic; }
-
-    .changelog-card {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--r); padding:10px 0; margin-bottom:52px;
-    }
-    .cl-row {
-      display:flex; gap:16px; align-items:flex-start;
-      padding:16px 24px; border-bottom:1px solid var(--border);
-    }
-    .cl-row:last-child { border-bottom:none; }
-    .cl-date { font-size:12px; color:var(--muted); font-family:monospace; white-space:nowrap; min-width:62px; padding-top:3px; }
-    .cl-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:6px; }
-    .dot-sys  { background:var(--purple); }
-    .dot-feat { background:var(--accent); }
-    .dot-fix  { background:var(--yellow); }
-    .dot-app  { background:var(--green);  }
-    .cl-title { font-size:15px; font-weight:700; color:#fff; margin-bottom:3px; }
-    .cl-sub   { font-size:13px; color:var(--muted); line-height:1.5; }
-    .cl-tag {
-      display:inline-block; font-size:10px; font-weight:700;
-      padding:2px 8px; border-radius:20px; margin-left:8px;
-      vertical-align:middle; letter-spacing:.04em; text-transform:uppercase;
-    }
-    .ct-sys  { background:#a78bfa14; color:var(--purple); border:1px solid #a78bfa30; }
-    .ct-feat { background:#6c8cff14; color:var(--accent); border:1px solid #6c8cff30; }
-    .ct-fix  { background:#fbbf2414; color:var(--yellow); border:1px solid #fbbf2430; }
-    .ct-app  { background:#34d39914; color:var(--green);  border:1px solid #34d39930; }
-
-    .legend-row {
-      display:flex; gap:20px; flex-wrap:wrap; align-items:center;
-      margin-bottom:52px; font-size:13px; color:var(--muted);
-    }
-    .legend-item { display:flex; align-items:center; gap:6px; }
-
-    /* ───── Docs page layout ───── */
-    .docs-layout {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 32px;
-      align-items: start;
-    }
-    @media(max-width:720px){ .docs-layout{ grid-template-columns:1fr; } }
-
-    /* Sidebar */
-    .docs-sidebar {
-      position: sticky;
-      top: 64px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 8px 0;
-      overflow: hidden;
-    }
-    .sidebar-group-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .12em;
-      text-transform: uppercase; color: var(--muted);
-      padding: 12px 16px 6px;
-    }
-    .sidebar-group-label:not(:first-child) {
-      border-top: 1px solid var(--border);
-      margin-top: 6px;
-    }
-    .sidebar-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 16px; font-size: 14px; font-weight: 500;
-      color: var(--muted); cursor: pointer;
-      border-left: 2px solid transparent;
-      transition: color .12s, background .12s, border-color .12s;
-      user-select: none;
-    }
-    .sidebar-item:hover { color: var(--text); background: #ffffff08; }
-    .sidebar-item.active { color: #fff; border-left-color: var(--accent); background: #6c8cff0a; }
-    .sidebar-dot {
-      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-    }
-
-    /* Doc panel */
-    .doc-panel { display: none; }
-    .doc-panel.active { display: block; }
-
-    .doc-header {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 28px 30px;
-      margin-bottom: 20px;
-    }
-    .doc-header-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .doc-title { font-size: 22px; font-weight: 800; color: #fff; }
-    .doc-type-badge {
-      font-size: 11px; font-weight: 700; padding: 4px 12px;
-      border-radius: 20px; letter-spacing: .06em; text-transform: uppercase;
-      white-space: nowrap; margin-top: 3px;
-    }
-    .doc-desc { font-size: 16px; color: #b0bbd0; line-height: 1.6; }
-
-    .doc-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 24px 28px;
-      margin-bottom: 16px;
-    }
-    .doc-section h3 {
-      font-size: 13px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 16px; padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-    .doc-section p { font-size: 15px; color: #b0bbd0; line-height: 1.65; margin-bottom: 10px; }
-    .doc-section p:last-child { margin-bottom: 0; }
-
-    .doc-step-list { list-style: none; }
-    .doc-step-list li {
-      display: flex; gap: 14px; align-items: flex-start;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-      font-size: 15px; color: #b0bbd0;
-    }
-    .doc-step-list li:last-child { border-bottom: none; padding-bottom: 0; }
-    .doc-step-num {
-      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
-      background: #6c8cff14; border: 1px solid #6c8cff30;
-      color: var(--accent); font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; margin-top: 1px;
-    }
-    .doc-step-text strong { color: #fff; }
-
-    .doc-rule-list { list-style: none; }
-    .doc-rule-list li {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-      font-size: 15px; color: #b0bbd0;
-    }
-    .doc-rule-list li:last-child { border-bottom: none; padding-bottom: 0; }
-    .doc-rule-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
-    .doc-rule-text strong { color: #fff; }
-
-    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media(max-width:580px){ .check-grid{ grid-template-columns:1fr; } }
-    .check-item {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px 14px;
-    }
-    .check-item-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .check-item-desc  { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-    .output-block {
-      background: #0d1020; border: 1px solid var(--border);
-      border-radius: 8px; padding: 16px 18px;
-      font-family: 'SF Mono','Fira Code',monospace;
-      font-size: 13px; color: #9ca8c0; line-height: 1.7;
-      white-space: pre; overflow-x: auto;
-    }
-
-    .meta-row {
-      display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px;
-    }
-    .meta-label { font-size: 12px; color: var(--muted); }
-    .meta-val   { font-size: 12px; font-weight: 600; color: var(--text); }
-
-    .voice-trait {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
-    }
-    .voice-trait-num {
-      font-size: 11px; font-weight: 700; color: var(--accent);
-      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px;
-    }
-    .voice-trait-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .voice-trait-desc  { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-    .config-field {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-      font-size: 14px;
-    }
-    .config-field:last-child { border-bottom: none; }
-    .config-key {
-      font-family: 'SF Mono','Fira Code',monospace; font-size: 13px;
-      color: var(--accent); min-width: 180px; flex-shrink: 0; padding-top: 1px;
-    }
-    .config-val { color: #b0bbd0; }
-
-    .script-flag {
-      display: flex; gap: 12px; align-items: flex-start;
-      padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px;
-    }
-    .script-flag:last-child { border-bottom: none; }
-    .flag-name {
-      font-family: 'SF Mono','Fira Code',monospace; font-size: 13px;
-      color: var(--cyan); min-width: 170px; flex-shrink: 0;
-    }
-    .flag-desc { color: #b0bbd0; }
-    .flag-req  { color: var(--yellow); font-size: 11px; font-weight: 700; margin-left: 6px; }
-
-    footer {
-      text-align:center; color:var(--muted); font-size:13px;
-      padding: 28px 24px 0; border-top:1px solid var(--border);
-    }
-
-    /* ───── Mobile select (hidden on desktop) ───── */
-    .docs-mobile-nav {
-      display: none;
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      color: var(--text);
-      font-size: 15px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-
-    /* ───── Mobile ───── */
-    @media (max-width: 768px) {
-      body { font-size: 15px; }
-
-      /* Nav: hide brand on small screens so tabs always fit */
-      .nav-brand { display: none; }
-      .tab-btn   { padding: 16px 18px; font-size: 14px; flex: 1; text-align: center; }
-
-      /* Page padding */
-      .page { padding: 24px 14px 0; }
-
-      /* KPI grids — 2 cols on mobile */
-      .kpi-grid-3                  { grid-template-columns: repeat(2,1fr); }
-      .paired-row                  { grid-template-columns: 1fr; }
-      .kpi-num                     { font-size: 30px; }
-
-      /* Pipeline stage bars */
-      .pipeline-stages { gap: 3px; }
-      .stage-block     { min-width: 44px; }
-      .stage-name      { font-size: 11px; margin-top: 4px; }
-
-      /* Command cards */
-      .step-grid      { grid-template-columns: 1fr; }
-      .command-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-
-      /* Agents / cost / check grids */
-      .agents-grid { grid-template-columns: 1fr; }
-      .cost-grid   { grid-template-columns: 1fr; }
-      .check-grid  { grid-template-columns: 1fr; }
-
-      /* Legend */
-      .legend-row { gap: 10px; }
-
-      /* ── Docs: kill the sidebar entirely, show native select instead ── */
-      .docs-layout    { grid-template-columns: 1fr; gap: 16px; }
-      .docs-sidebar   { display: none !important; }
-      .docs-mobile-nav { display: block; }
-
-      /* Doc panels */
-      .doc-header      { padding: 18px 16px; }
-      .doc-section     { padding: 16px 14px; }
-      .doc-header-top  { flex-direction: column; gap: 8px; }
-      .doc-step-list li { font-size: 14px; }
-      .script-flag     { flex-direction: column; gap: 4px; }
-      .flag-name       { min-width: unset; }
-      .config-field    { flex-direction: column; gap: 4px; }
-      .config-key      { min-width: unset; }
-    }
-  </style>
-</head>
+  @media (max-width: 600px) {
+    body { padding: 2.5rem 1.1rem 4rem; }
+    .bars .row { grid-template-columns: 7.2rem 1fr 4.6rem; gap: 0 0.7rem; }
+    .statrow { gap: 0 2rem; }
+  }
+</style>
+<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-KERQNNZTGQ"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-KERQNNZTGQ');</script></head>
 <body>
-
-  <!-- ── Tab nav ── -->
-  <nav class="top-nav">
-    <div class="nav-brand">Daniel Rim — Job Search System</div>
-    <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
-    <button class="tab-btn" onclick="switchTab('dashboard', this)">Dashboard</button>
-    <button class="tab-btn" onclick="switchTab('docs', this)">Documentation</button>
-  </nav>
-
-  <!-- ════════════════════════════════════════
-       TAB 1: OVERVIEW
-  ════════════════════════════════════════ -->
-  <div id="page-overview" class="page active">
-  <div class="container">
-
-    <header>
-      <div class="badge-pill">Claude Code Automation · Shared View</div>
-      <h1>Daniel Rim — Job Search System</h1>
-      <p>An AI-powered assistant that handles the repetitive, error-prone parts of applying to jobs — tailored resumes, tracker updates, follow-up drafts, and more.</p>
-    </header>
-
-    <div class="section-label">What it is</div>
-    <div class="summary">
-      <p>This is a custom job search assistant built on top of Claude Code — an AI tool made by Anthropic. Instead of a generic chatbot, it has been configured specifically for Daniel's job search. It knows his resume, his real experience, his writing style, and maintains a live Excel tracker of every application.</p>
-      <p>The guiding idea: <strong>Claude handles reasoning and generation. Python scripts handle data integrity. Built-in guards enforce rules automatically.</strong> Nothing gets submitted without Daniel's explicit go-ahead.</p>
-    </div>
-
-    <div class="section-label">Live Dashboard</div>
-    <div class="summary" style="margin-bottom:52px;">
-      <p>Real-time stats, submitted applications, Tier 1 leads, and high-priority actives. Updated automatically at the end of every session. <a href="#" onclick="switchTab('dashboard', document.querySelector('[onclick*=dashboard]'));return false;" style="color:var(--accent);">Open the Dashboard tab &rarr;</a></p>
-    </div>
-    <div class="section-label">The Four Commands</div>
-    <div class="command-card">
-      <div class="command-header">
-        <div class="cmd-badge">/new-application</div>
-        <div class="cmd-headline">Build a complete, tailored application</div>
-      </div>
-      <div class="cmd-desc">Paste a job URL or description and the system scaffolds everything — resume, folder, tracker entry, and a QA check — without inventing anything that isn't in Daniel's real experience.</div>
-      <div class="step-grid">
-        <div class="step-item"><div class="step-num">1</div><span>Creates the company folder and saves the job description</span></div>
-        <div class="step-item"><div class="step-num">2</div><span>Scores fit (Tier 1–4) before investing tailoring effort</span></div>
-        <div class="step-item"><div class="step-num">3</div><span>Tailors the resume to mirror the JD's language — accurately</span></div>
-        <div class="step-item"><div class="step-num">4</div><span>Stages a cover letter or outreach only when warranted</span></div>
-        <div class="step-item"><div class="step-num">5</div><span>Adds a row to the Leads tracking spreadsheet</span></div>
-        <div class="step-item"><div class="step-num">6</div><span>Runs a QA agent to verify accuracy before finishing</span></div>
-      </div>
-    </div>
-
-    <div class="command-card">
-      <div class="command-header">
-        <div class="cmd-badge">/submit-application</div>
-        <div class="cmd-headline">Record everything the moment you hit Apply</div>
-      </div>
-      <div class="cmd-desc">One command triggers five actions in sequence — from updating the tracker to drafting the follow-up message — creating a permanent, complete record of every submission.</div>
-      <div class="step-grid">
-        <div class="step-item"><div class="step-num">1</div><span>Updates the Pipeline tracker (stage, activity, next action)</span></div>
-        <div class="step-item"><div class="step-num">2</div><span>Snapshots the exact files sent into a dated folder</span></div>
-        <div class="step-item"><div class="step-num">3</div><span>Creates a Google Calendar reminder for day-7 follow-up</span></div>
-        <div class="step-item"><div class="step-num">4</div><span>Drafts a follow-up message in Daniel's voice — ready to send</span></div>
-        <div class="step-item"><div class="step-num">5</div><span>Confirms everything in a summary with all paths and dates</span></div>
-        <div class="step-item" style="visibility:hidden;"></div>
-      </div>
-    </div>
-
-    <div class="command-card">
-      <div class="command-header">
-        <div class="cmd-badge">/triage-inbox</div>
-        <div class="cmd-headline">Close the loop on what came back</div>
-      </div>
-      <div class="cmd-desc">Sweeps Gmail for recruiter and ATS replies, classifies each one, and reconciles it against the tracker — so a reply never sits unnoticed and the pipeline never drifts from reality. Read-and-recommend only.</div>
-      <div class="step-grid">
-        <div class="step-item"><div class="step-num">1</div><span>Sweeps the inbox for recruiter and ATS replies (targeted queries)</span></div>
-        <div class="step-item"><div class="step-num">2</div><span>Classifies each thread: interview, scheduling, question, rejection</span></div>
-        <div class="step-item"><div class="step-num">3</div><span>Cross-references every reply against the Pipeline tracker</span></div>
-        <div class="step-item"><div class="step-num">4</div><span>Flags mismatches, like a rejection the tracker still shows active</span></div>
-        <div class="step-item"><div class="step-num">5</div><span>Hands back a prioritized action list with staged reply drafts</span></div>
-        <div class="step-item"><div class="step-num">6</div><span>Never sends, archives, or deletes — recommendations only</span></div>
-      </div>
-    </div>
-
-    <div class="command-card" style="margin-bottom:52px;">
-      <div class="command-header">
-        <div class="cmd-badge">/prep-interview</div>
-        <div class="cmd-headline">Walk into every interview already rehearsed</div>
-      </div>
-      <div class="cmd-desc">Builds a focused prep guide for a specific company and role — likely questions mapped to real STAR stories from documented performance reviews, plus smart questions to ask. Nothing generic, nothing invented.</div>
-      <div class="step-grid">
-        <div class="step-item"><div class="step-num">1</div><span>Loads the STAR story library and the saved job description</span></div>
-        <div class="step-item"><div class="step-num">2</div><span>Reads the Pipeline row for stage, contact, and notes</span></div>
-        <div class="step-item"><div class="step-num">3</div><span>Predicts the 3–5 most likely questions for this role and stage</span></div>
-        <div class="step-item"><div class="step-num">4</div><span>Maps each question to the strongest real story, in 90-second spoken form</span></div>
-        <div class="step-item"><div class="step-num">5</div><span>Adds company-specific smart questions worth asking</span></div>
-        <div class="step-item"><div class="step-num">6</div><span>Ends with a pre-call checklist: interviewer, news, format</span></div>
-      </div>
-    </div>
-
-    <div class="section-label">Four Specialized Agents</div>
-    <div class="agents-grid">
-      <div class="agent-card">
-        <span class="agent-icon">🔍</span>
-        <div class="agent-name">Fit Screener</div>
-        <div class="agent-desc">Evaluates a job posting before any effort is invested. Scores stack overlap, flags dealbreakers, and returns a Tier 1–4 rating with a one-liner for the tracker.</div>
-        <span class="pill pill-blue">On-demand</span>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">✅</span>
-        <div class="agent-name">Application Reviewer</div>
-        <div class="agent-desc">QA gate before anything goes out. Checks figures, no invented experience, voice compliance, and JD keyword coverage. Returns a PASS / NEEDS FIXES verdict.</div>
-        <span class="pill pill-purple">Auto-runs after tailoring</span>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">🏢</span>
-        <div class="agent-name">Company Research</div>
-        <div class="agent-desc">Builds a pre-interview or pre-cover-letter brief. What the company does, data team signals, recent news, why Daniel fits, and smart questions to ask.</div>
-        <span class="pill pill-blue">On-demand</span>
-      </div>
-      <div class="agent-card">
-        <span class="agent-icon">📋</span>
-        <div class="agent-name">Tracker Auditor</div>
-        <div class="agent-desc">Read-only hygiene check on the Excel tracker. Surfaces stale applications, overdue follow-ups, missing dates, and folder/tracker mismatches.</div>
-        <span class="pill pill-blue">On-demand</span>
-      </div>
-    </div>
-
-    <div class="section-label">Built-in Guardrails — always on</div>
-    <div class="guard-card"><div class="guard-icon">✍️</div><div class="guard-body"><strong>Em-dash guard:</strong> Warns if a cover letter, message, or follow-up contains an em-dash or double-hyphen the moment the file is written.</div></div>
-    <div class="guard-card"><div class="guard-icon">🗂️</div><div class="guard-body"><strong>No-delete guard:</strong> Warns any time a command tries to delete a file. Standing rule is to archive instead, so nothing is ever permanently lost.</div></div>
-    <div class="guard-card"><div class="guard-icon">🔒</div><div class="guard-body"><strong>Atomic tracker writes:</strong> The Excel tracker is only written by a dedicated Python script. Writes to a temp file first, then swaps atomically — a crash never corrupts the file.</div></div>
-    <div class="guard-card"><div class="guard-icon">⬆️</div><div class="guard-body"><strong>Stage downgrade guard:</strong> The tracker refuses to move an application backward (e.g., "Phone Screen" → "Applied") unless you explicitly force it.</div></div>
-    <div class="guard-card" style="margin-bottom:52px;"><div class="guard-icon">🚫</div><div class="guard-body"><strong>Never submits or sends:</strong> Every command only stages drafts. Nothing goes out without Daniel's explicit go-ahead.</div></div>
-
-    <div class="section-label">Efficiency Estimate</div>
-    <div class="cost-grid">
-      <div class="cost-card">
-        <h3>Time Saved Per Application</h3>
-        <div class="cost-row"><span>Manual resume tailoring</span><span class="val">45–90 min</span></div>
-        <div class="cost-row"><span>With this system</span><span class="val green">~10 min</span></div>
-        <div class="cost-row"><span>Tracker update + snapshot</span><span class="val">10–15 min</span></div>
-        <div class="cost-row"><span>With this system</span><span class="val green">~1 min</span></div>
-        <div class="cost-row"><span>Follow-up draft</span><span class="val">15–20 min</span></div>
-        <div class="cost-row"><span>With this system</span><span class="val green">~2 min</span></div>
-        <div class="cost-note">Estimated ~1–2 hours saved per application. At 10 applications: 10–20 hours reclaimed.</div>
-      </div>
-      <div class="cost-card">
-        <h3>Claude Code Cost vs Manual</h3>
-        <div class="cost-row"><span>Career coach (hourly rate)</span><span class="val yellow">$150–300/hr</span></div>
-        <div class="cost-row"><span>Resume writer (per tailoring)</span><span class="val yellow">$50–150</span></div>
-        <div class="cost-row"><span>Claude Code Pro (monthly)</span><span class="val green">$20/mo</span></div>
-        <div class="cost-row"><span>Applications so far (10)</span><span class="val">—</span></div>
-        <div class="cost-row"><span>System build + tailoring cost</span><span class="val green">&lt; $20 total</span></div>
-        <div class="cost-note">The entire system — infrastructure, tailored resumes, all agents — built within one month's subscription.</div>
-      </div>
-    </div>
-
-    <div class="section-label">Changelog</div>
-    <div class="changelog-card">
-<!-- AUTO:CHANGELOG -->
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: GitHub links point at the-pipeline-toolkit (real source) <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Public toolkit export: allowlist mirror + purge personal data from [company] <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">session snapshot 2026-07-18 22:22 <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add auto_commit.py Stop hook: session-snapshot commits <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Snapshot: application backlog, punch-list work-through, ignore .wrangler <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: JMI design note dedupes the credit-cap mention <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: remove resume PDF from the site per Daniel's call <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 18</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: The Pipeline 'How it works' page + tile link <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: web-safe resume PDF (phone stripped) + one-off generator <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: add The Pipeline card with inline architecture mini-map <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Portfolio: fix CHS repo link, add design notes, renumber to 03 <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Portfolio: JMI card accuracy rewrite (built vs planned) + design notes <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: hero about blurb + resume PDF links in nav and footer <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Portfolio: add OG/Twitter meta, favicon, drop title em-dash <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add portfolio v2 implementation plan (8 tasks, verification sweep) <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Add portfolio v2 design spec: accuracy fixes, about, resume PDF, pipeline card <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 16</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Audit toolkit vs memory talk: fix stale rules, add _closed filing <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 14</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Revise base resume per TopResume critique; add resume writing standard + lint <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jul 13</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Migrate real dashboard to Cloudflare Pages + Access; retire Netlify <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 15</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Show company + salary in public demo tables; snapshot job-search work <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 15</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add [company] phone-screen prep + reusable prep PDF renderer <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 11</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Dashboard: Interview Phase section, scrolling tables, safer demo columns <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 11</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add GitHub Pages deploy for sanitized dashboard; harden demo scrubber <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 10</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add read-only permission allowlist, session-hygiene rule, [company] folder <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 10</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add briefing + tracker-shrink hooks; bank application backlog <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 9</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add dashboard top timestamp + auto-deploy to Netlify <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add Dashboard tab: move live stats + tables out of Overview <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Fix XSS: escape href attributes and validate URL scheme in update_artifact.py <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Redesign dashboard: paired tile+table layout for pipeline sections <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Record [company] application submission (2026-06-07) <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add [company] cover letter as .docx for PDF export <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 7</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Add [company] application + base resume fix + Opus subagent skill update <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Update CLAUDE.md to reflect full toolkit (4 skills, hooks, story library) <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add STAR story library + /prep-interview skill <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Clean up dashboard: color semantics, orphan card fix, remove redacted note <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Fix mobile docs nav: replace sidebar with native select dropdown <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Make artifact mobile-friendly for iPhone <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add triage-inbox skill + auto-generated sanitized demo artifact <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add auto-update artifact hook + live timestamp <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Realign base resume + config from 2025 performance reviews <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Mark [company] lead as likely-stale after ATS verification (not on official careers) <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add [company] Senior Analytics Engineer lead (Tier 1, unverified) <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Tidy: commit floating [company] application + [company] resume PDF <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Save [company] application free-text answers (paused mid-application) <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add personalized voice profile + wire into drafting and review <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Update [company] pipeline row: formal application completed 2026-06-01 <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Tailor [company] Data Engineer GTM resume + record [contact]'s referral intel <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add [company] Data Engineer GTM lead + friend outreach draft <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Record [company] Identity submission (submit-application flow) <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Add [company] Identity cover letter (md/docx/pdf) + recruiter note <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-app"></div><div><div class="cl-title">Switch [company] target to Analytics Engineer II, Identity <span class="cl-tag ct-app">Application</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-fix"></div><div><div class="cl-title">Fix renderer bold-label bug + base resume accuracy + [company] tier <span class="cl-tag ct-fix">Fix</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-feat"></div><div><div class="cl-title">Add [company] (Senior Data Analyst, Customer Value) application + add_lead.py helper <span class="cl-tag ct-feat">Feature</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 6</div><div class="cl-dot dot-feat"></div><div><div class="cl-title">Add no-downgrade stage guard to update_pipeline.py (+ --force override) <span class="cl-tag ct-feat">Feature</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 5</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Add job-search automation toolkit (config, skills, hooks, subagents) <span class="cl-tag ct-sys">System</span></div></div></div>
-      <div class="cl-row"><div class="cl-date">Jun 5</div><div class="cl-dot dot-sys"></div><div><div class="cl-title">Initial commit: job-search workspace + automation design spec <span class="cl-tag ct-sys">System</span></div></div></div>
-    <!-- /AUTO:CHANGELOG -->
-    </div>
-
-    <div class="legend-row">
-      <span style="font-size:13px;font-weight:700;color:var(--muted);">Changelog key:</span>
-      <span class="legend-item"><span class="cl-tag ct-sys">System</span> Infrastructure built</span>
-      <span class="legend-item"><span class="cl-tag ct-feat">Feature</span> New capability added</span>
-      <span class="legend-item"><span class="cl-tag ct-fix">Fix</span> Bug or accuracy correction</span>
-      <span class="legend-item"><span class="cl-tag ct-app">Application</span> Job applied or tracked</span>
-    </div>
-
-  </div><!-- /container -->
-  </div><!-- /page-overview -->
-
-
-
-  <!-- ════════════════════════════════════════
-       TAB 2: DASHBOARD
-  ════════════════════════════════════════ -->
-  <div id="page-dashboard" class="page">
-  <div class="container">
-
-    <div class="section-label">Live Dashboard</div>
-    <div style="font-size:13px;color:var(--muted);margin:-6px 0 24px;">Last updated <span style="color:var(--text);font-weight:600;"><!-- AUTO:DATE -->July 18, 2026 · 10:49 PM<!-- /AUTO:DATE --></span></div>
-    <div class="summary" style="margin-bottom:52px;">
-      <p>Real-time pipeline stats, submitted applications, Tier 1 leads, and high-priority actives — updated automatically at the end of every session. <a href="#" onclick="switchTab('dashboard', document.querySelector('[onclick*=dashboard]'));return false;" style="color:var(--accent);">Open the Dashboard tab</a> to see the full view.</p>
-    </div>
-
-    <!-- Top summary row (Dashboard tab) -->
-    <div class="kpi-grid-3" style="display:none"><!-- placeholder --></div>
-    <div class="kpi-grid-3">
-      <div class="kpi-card kpi-blue">
-        <div class="kpi-num"><!-- AUTO:KPI_LEADS -->121<!-- /AUTO:KPI_LEADS --></div>
-        <div class="kpi-label">Leads Tracked</div>
-        <div class="kpi-sub">Captured &amp; scored in the Leads sheet</div>
-      </div>
-      <div class="kpi-card kpi-purple">
-        <div class="kpi-num"><!-- AUTO:KPI_PIPELINE -->38<!-- /AUTO:KPI_PIPELINE --></div>
-        <div class="kpi-label">In Pipeline</div>
-        <div class="kpi-sub">Active in the Pipeline tracker</div>
-      </div>
-      <div class="kpi-card kpi-yellow">
-        <div class="kpi-num"><!-- AUTO:KPI_ONHOLD -->1<!-- /AUTO:KPI_ONHOLD --></div>
-        <div class="kpi-label">On Hold</div>
-        <div class="kpi-sub">Role paused or pending external decision</div>
-      </div>
-    </div>
-
-    <!-- Interview Phase + Table -->
-    <div class="paired-row">
-      <div class="kpi-card kpi-green">
-        <div class="kpi-num"><!-- AUTO:KPI_INTERVIEW -->4<!-- /AUTO:KPI_INTERVIEW --></div>
-        <div class="kpi-label">Interview Phase</div>
-        <div class="kpi-sub">Screens &amp; interviews in play right now</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_INTERVIEW --><table class="data-table"><thead><tr><th>Company</th><th>Role</th><th>Salary</th><th>Stage</th></tr></thead><tbody><tr><td class="">Discord</td><td class="td-muted">Senior Data Scientist, Analytics</td><td class="td-green">$196,000-$220,500 + equity</td><td class="td-green">Interview R2 - Technical</td></tr><tr><td class="">Strategus</td><td class="td-muted">Senior Data &amp; Insights Engineer</td><td class="td-green">-</td><td class="td-green">Interview R2 - Director of Technology</td></tr><tr><td class="">Optomi</td><td class="td-muted">Analytics Engineer</td><td class="td-green">Not listed</td><td class="td-green">Interview R1 - Panel</td></tr><tr><td class="">Agility Partners</td><td class="td-muted">Senior Data Engineer</td><td class="td-green">$70/hr contract W2</td><td class="td-green">Recruiter Screen</td></tr></tbody></table><!-- /AUTO:TABLE_INTERVIEW --></div></div>
-    </div>
-
-    <!-- Recent Interviews + Table (from /log-interview debriefs; date = interview date) -->
-    <div class="paired-row">
-      <div class="kpi-card kpi-green">
-        <div class="kpi-num"><!-- AUTO:KPI_RECENT -->7<!-- /AUTO:KPI_RECENT --></div>
-        <div class="kpi-label">Interviews, Last 30 Days</div>
-        <div class="kpi-sub"><!-- AUTO:KPI_INT_TOTAL -->14<!-- /AUTO:KPI_INT_TOTAL --> all-time incl. recruiter calls &middot; most recent first</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_RECENT --><table class="data-table"><thead><tr><th>Date</th><th>Company</th><th>Round</th><th>Status Now</th></tr></thead><tbody><tr><td class="td-muted">2026-07-17</td><td class="">Optomi</td><td class="">R1 Panel</td><td class="td-green">Interview R1 - Panel</td></tr><tr><td class="td-muted">2026-07-16</td><td class="">Agility Partners</td><td class="">Recruiter Screen</td><td class="td-green">Recruiter Screen</td></tr><tr><td class="td-muted">2026-07-08</td><td class="">Optomi</td><td class="">Recruiter Screen</td><td class="td-green">Interview R1 - Panel</td></tr><tr><td class="td-muted">2026-07-03</td><td class="">Strategus</td><td class="">R2 Technical</td><td class="td-green">Interview R2 - Director of Technology</td></tr><tr><td class="td-muted">2026-07-02</td><td class="">Strategus</td><td class="">Phone Screen</td><td class="td-green">Interview R2 - Director of Technology</td></tr><tr><td class="td-muted">2026-06-30</td><td class="">Wayvia</td><td class="">Recruiter Screen</td><td class="td-muted">Rejected</td></tr><tr><td class="td-muted">2026-06-23</td><td class="">Discord</td><td class="">Phone Screen</td><td class="td-green">Interview R2 - Technical</td></tr><tr><td class="td-muted">2026-06-15</td><td class="">Spring Health</td><td class="">Phone Screen</td><td class="td-muted">Rejected</td></tr><tr><td class="td-muted">2026-06-12</td><td class="">Mitratech (via InterEx Group)</td><td class="">R1 Hiring Director</td><td class="td-muted">No Response</td></tr><tr><td class="td-muted">2026-06-12</td><td class="">Earnest</td><td class="">R2 Hiring Manager</td><td class="td-muted">Rejected</td></tr><tr><td class="td-muted">2026-06-11</td><td class="">Earnest</td><td class="">Phone Screen</td><td class="td-muted">Rejected</td></tr><tr><td class="td-muted">2026-06-01</td><td class="">Anatta</td><td class="">Recruiter Call</td><td class="td-green">Outreach Sent</td></tr></tbody></table><!-- /AUTO:TABLE_RECENT --></div></div>
-    </div>
-
-    <!-- Stage Breakdown (full width) -->
-    <div class="pipeline-card" style="margin-bottom:28px;">
-        <div class="pipeline-title">Stage Breakdown</div>
-        <div class="pipeline-stages">
-          <div class="stage-block">
-            <div style="color:var(--green);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_SCREEN -->4<!-- /AUTO:STAGE_SCREEN --></div>
-            <div class="stage-bar" style="background:var(--green);height:40px;"></div>
-            <div class="stage-name">Screens &amp; Interviews</div>
-          </div>
-          <div class="stage-block">
-            <div style="color:var(--accent);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_APPLIED -->12<!-- /AUTO:STAGE_APPLIED --></div>
-            <div class="stage-bar" style="background:var(--accent);height:40px;"></div>
-            <div class="stage-name">Applied</div>
-          </div>
-          <div class="stage-block">
-            <div style="color:var(--purple);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_OUTREACH -->3<!-- /AUTO:STAGE_OUTREACH --></div>
-            <div class="stage-bar" style="background:var(--purple);height:8px;"></div>
-            <div class="stage-name">Outreach Sent</div>
-          </div>
-          <div class="stage-block">
-            <div style="color:var(--cyan);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_NETWORK -->1<!-- /AUTO:STAGE_NETWORK --></div>
-            <div class="stage-bar" style="background:var(--cyan);height:4px;"></div>
-            <div class="stage-name">Networking</div>
-          </div>
-          <div class="stage-block">
-            <div style="color:var(--muted);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_PROSPECT -->2<!-- /AUTO:STAGE_PROSPECT --></div>
-            <div class="stage-bar" style="background:var(--muted);height:4px;"></div>
-            <div class="stage-name">Prospect</div>
-          </div>
-          <div class="stage-block">
-            <div style="color:var(--yellow);font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;"><!-- AUTO:STAGE_HOLD -->1<!-- /AUTO:STAGE_HOLD --></div>
-            <div class="stage-bar" style="background:var(--yellow);height:4px;"></div>
-            <div class="stage-name">On Hold</div>
-          </div>
-        </div>
-    </div>
-
-    <!-- Applied + Table -->
-    <div class="paired-row">
-      <div class="kpi-card kpi-green">
-        <div class="kpi-num"><!-- AUTO:KPI_APPLIED -->12<!-- /AUTO:KPI_APPLIED --></div>
-        <div class="kpi-label">Applied</div>
-        <div class="kpi-sub">Applications formally submitted</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_APPLIED --><table class="data-table"><thead><tr><th>Company</th><th>Role</th><th>Salary</th><th>Priority</th></tr></thead><tbody><tr><td class="">Solv (Solv Health)</td><td class="td-muted">Senior Analytics Engineer</td><td class="td-green">-</td><td class="td-muted">High</td></tr><tr><td class="">Axios</td><td class="td-muted">Analytics Engineer</td><td class="td-green">-</td><td class="td-muted">High</td></tr><tr><td class="">Figma</td><td class="td-muted">Data Engineer</td><td class="td-green">-</td><td class="td-muted">High</td></tr><tr><td class="">SleepTech SeriesD</td><td class="td-muted">Senior Data Engineer</td><td class="td-green">$180,000 - $230,000</td><td class="td-muted">-</td></tr><tr><td class="">Celigo</td><td class="td-muted">Analytics Engineer</td><td class="td-green">$120,000 - $140,000</td><td class="td-muted">-</td></tr><tr><td class="">Obviant</td><td class="td-muted">Software Engineer, Data</td><td class="td-green">Not listed</td><td class="td-muted">-</td></tr><tr><td class="">Arcadia</td><td class="td-muted">Lead Analytics Engineer - Data Modeling &amp; Quality</td><td class="td-green">-</td><td class="td-muted">-</td></tr><tr><td class="">Coinbase</td><td class="td-muted">Senior Analytics Engineer (Platform - Financial Analytics)</td><td class="td-green">$180,000-$212,000</td><td class="td-muted">-</td></tr><tr><td class="">Trumid</td><td class="td-muted">Senior Data Engineer - Analytics Platform</td><td class="td-green">$200,000-$250,000 base (NYC disclosure)</td><td class="td-muted">-</td></tr><tr><td class="">Aurora Solar</td><td class="td-muted">Staff Analytics Engineer</td><td class="td-green">$136.2K-$216.7K (DC Tier 2: $149.8K-$198.6K) + equity + bonus</td><td class="td-muted">-</td></tr><tr><td class="">EDO</td><td class="td-muted">Senior Data Engineer</td><td class="td-green">$120K-$160K + equity</td><td class="td-muted">-</td></tr><tr><td class="">Velir</td><td class="td-muted">Senior Data and Analytics Engineer</td><td class="td-green">$160K-$175K</td><td class="td-muted">-</td></tr></tbody></table><!-- /AUTO:TABLE_APPLIED --></div></div>
-    </div>
-
-    <!-- Tier 1 Leads + Table -->
-    <div class="paired-row">
-      <div class="kpi-card kpi-blue">
-        <div class="kpi-num"><!-- AUTO:KPI_TIER1 -->17<!-- /AUTO:KPI_TIER1 --></div>
-        <div class="kpi-label">Tier 1 Leads</div>
-        <div class="kpi-sub">Strong stack overlap, right seniority</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_TIER1 --><table class="data-table"><thead><tr><th>Company</th><th>Role</th><th>Location</th><th>Salary</th><th>Status</th></tr></thead><tbody><tr><td class="">BetterHelp</td><td class="td-muted">Senior BI and Analytics Engineer</td><td class="td-muted">Remote - US</td><td class="td-green">$100,000 – $155,000</td><td class="td-muted">Lead</td></tr><tr><td class="">Tailscale</td><td class="td-muted">Analytics Engineer, Data</td><td class="td-muted">Remote (US)</td><td class="td-green">$136k–$170k</td><td class="td-muted">Lead</td></tr><tr><td class="">Spring Health</td><td class="td-muted">Analytics Engineer II, Identity</td><td class="td-muted">Remote (USA)</td><td class="td-green">$120k–$140k</td><td class="td-muted">Lead</td></tr><tr><td class="">PandaDoc</td><td class="td-muted">Senior Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$140,000 - $160,000</td><td class="td-muted">Lead</td></tr><tr><td class="">Arbor</td><td class="td-muted">Data / Analytics Engineer</td><td class="td-muted">Remote near DC</td><td class="td-green">-</td><td class="td-muted">Lead</td></tr><tr><td class="">Celigo</td><td class="td-muted">Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$120,000 - $140,000</td><td class="td-green">In Pipeline</td></tr><tr><td class="">Amplify</td><td class="td-muted">Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$115,000 - $129,000 + bonus</td><td class="td-green">In Pipeline</td></tr><tr><td class="">Appfire</td><td class="td-muted">Senior Data Analytics Engineer - Data Insights</td><td class="td-muted">Remote (US)</td><td class="td-green">Not listed</td><td class="td-muted">Lead</td></tr><tr><td class="">The Shade Store</td><td class="td-muted">Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$130,000 - $180,000</td><td class="td-muted">Lead</td></tr><tr><td class="">Counsel Health</td><td class="td-muted">Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$145,000 - $190,000</td><td class="td-muted">Lead</td></tr><tr><td class="">Anthropic</td><td class="td-muted">Data Engineer</td><td class="td-muted">San Francisco / NYC / Seattle (remote not stated)</td><td class="td-green">$275,000 - $370,000</td><td class="td-muted">Lead</td></tr><tr><td class="">Fora Financial</td><td class="td-muted">Senior / Staff Analytics Engineer</td><td class="td-muted">Remote (US, Eastern/Central preferred)</td><td class="td-green">$140K–$200K</td><td class="td-muted">Lead</td></tr><tr><td class="">BetterUp</td><td class="td-muted">Senior Analytics Engineer</td><td class="td-muted">Hybrid — DC/Arlington hub (2+ days/wk in office)</td><td class="td-green">$158K–$198K (DC/Arlington zone)</td><td class="td-muted">Lead</td></tr><tr><td class="">Brigit</td><td class="td-muted">Senior Analytics Engineer</td><td class="td-muted">Remote (US)</td><td class="td-green">$170K–$190K</td><td class="td-muted">Lead</td></tr><tr><td class="">Fullscript</td><td class="td-muted">Senior Data Analytics Engineer</td><td class="td-muted">Remote (US + Canada)</td><td class="td-green">-</td><td class="td-muted">Lead</td></tr><tr><td class="">Aurora Solar</td><td class="td-muted">Staff Analytics Engineer</td><td class="td-muted">United States (Remote)</td><td class="td-green">$136.2K-$216.7K (DC Tier 2: $149.8K-$198.6K) + equity + bonus</td><td class="td-green">In Pipeline</td></tr><tr><td class="">Guild</td><td class="td-muted">Analytics Engineer</td><td class="td-muted">Denver, CO (Remote - 32 states incl. VA/DC)</td><td class="td-green">$110,000 - $159,000</td><td class="td-muted">Lead</td></tr></tbody></table><!-- /AUTO:TABLE_TIER1 --></div></div>
-    </div>
-
-    <!-- High-Priority Active + Table -->
-    <div class="paired-row" style="margin-bottom:28px;">
-      <div class="kpi-card kpi-purple">
-        <div class="kpi-num"><!-- AUTO:KPI_HIPRI -->5<!-- /AUTO:KPI_HIPRI --></div>
-        <div class="kpi-label">High-Priority Active</div>
-        <div class="kpi-sub">Priority: High, non-terminal stage</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_HIPRI --><table class="data-table"><thead><tr><th>Company</th><th>Role</th><th>Salary</th><th>Stage</th></tr></thead><tbody><tr><td class="">Vanta</td><td class="td-muted">Analyst OR Engineering (decide)</td><td class="td-green">Not listed</td><td class="td-muted">Outreach Sent</td></tr><tr><td class="">Recharge</td><td class="td-muted">Senior Data Analyst, GTM Analytics</td><td class="td-green">$148k–$185k</td><td class="td-muted">Outreach Sent</td></tr><tr><td class="">Solv (Solv Health)</td><td class="td-muted">Senior Analytics Engineer</td><td class="td-green">-</td><td class="td-muted">Applied</td></tr><tr><td class="">Axios</td><td class="td-muted">Analytics Engineer</td><td class="td-green">-</td><td class="td-muted">Applied</td></tr><tr><td class="">Figma</td><td class="td-muted">Data Engineer</td><td class="td-green">-</td><td class="td-muted">Applied</td></tr></tbody></table><!-- /AUTO:TABLE_HIPRI --></div></div>
-    </div>
-
-    <!-- Gone Quiet + Table (No Response / Ghosted: parked, not chased) -->
-    <div class="paired-row" style="margin-bottom:28px;">
-      <div class="kpi-card kpi-yellow">
-        <div class="kpi-num"><!-- AUTO:KPI_QUIET -->5<!-- /AUTO:KPI_QUIET --></div>
-        <div class="kpi-label">Gone Quiet</div>
-        <div class="kpi-sub">No reply from their side; parked, not chased</div>
-      </div>
-      <div class="table-card"><div class="table-scroll"><!-- AUTO:TABLE_QUIET --><table class="data-table"><thead><tr><th>Company</th><th>Role</th><th>Salary</th><th>Stage</th></tr></thead><tbody><tr><td class="">GrowthLoop</td><td class="td-muted">Analytics (track TBD)</td><td class="td-green">-</td><td class="td-muted">No Response</td></tr><tr><td class="">Trumid</td><td class="td-muted">TBD - confirm role</td><td class="td-green">$200,000-$250,000 base (NYC disclosure)</td><td class="td-muted">No Response</td></tr><tr><td class="">Elastic</td><td class="td-muted">Principal Analytics Engineer</td><td class="td-green">-</td><td class="td-muted">No Response</td></tr><tr><td class="">Talkiatry</td><td class="td-muted">Senior Analytics Engineer, Marketing</td><td class="td-green">-</td><td class="td-muted">No Response</td></tr><tr><td class="">Mitratech (via InterEx Group)</td><td class="td-muted">Contract Data Engineer - Snowflake Semantic Layer for Agentic AI</td><td class="td-green">-</td><td class="td-muted">No Response</td></tr></tbody></table><!-- /AUTO:TABLE_QUIET --></div></div>
-    </div>
-
-
-  </div><!-- /container -->
-  </div><!-- /page-dashboard -->
-
-  <!-- ════════════════════════════════════════
-       TAB 3: DOCUMENTATION
-  ════════════════════════════════════════ -->
-  <div id="page-docs" class="page">
-  <div class="container" style="padding-bottom:80px;">
-
-    <div style="margin-bottom:32px;">
-      <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;">Component Reference</div>
-      <div style="font-size:16px;color:var(--muted);">18 components power the system — 4 skills, 4 agents, 3 scripts, 4 hooks, 1 config, 1 voice profile, 1 story library.</div>
-    </div>
-
-    <!-- Mobile doc nav: replaces sidebar on small screens -->
-    <select class="docs-mobile-nav" onchange="showDocMobile(this.value)">
-      <optgroup label="Skills">
-        <option value="new-application">/new-application</option>
-        <option value="submit-application">/submit-application</option>
-        <option value="triage-inbox">/triage-inbox</option>
-      </optgroup>
-      <optgroup label="Agents">
-        <option value="job-fit-screener">job-fit-screener</option>
-        <option value="application-reviewer">application-reviewer</option>
-        <option value="company-research">company-research</option>
-        <option value="tracker-auditor">tracker-auditor</option>
-      </optgroup>
-      <optgroup label="Scripts">
-        <option value="render-resume">render_resume.py</option>
-        <option value="add-lead">add_lead.py</option>
-        <option value="update-pipeline">update_pipeline.py</option>
-      </optgroup>
-      <optgroup label="Hooks">
-        <option value="check-emdash">check_emdash.py</option>
-        <option value="guard-delete">guard_delete.py</option>
-        <option value="update-artifact">update_artifact.py</option>
-        <option value="session-cheatsheet">session cheat sheet</option>
-      </optgroup>
-      <optgroup label="Config &amp; Profile">
-        <option value="config">job-search.config.json</option>
-        <option value="voice-profile">voice-profile.md</option>
-      </optgroup>
-      <optgroup label="Interview Prep">
-        <option value="prep-interview">/prep-interview skill</option>
-        <option value="story-library">STAR story library</option>
-      </optgroup>
-    </select>
-
-    <div class="docs-layout">
-
-      <!-- ── Sidebar nav ── -->
-      <div class="docs-sidebar">
-        <div class="sidebar-group-label">Skills</div>
-        <div class="sidebar-item active" onclick="showDoc('new-application', this)"><div class="sidebar-dot" style="background:var(--accent);"></div>/new-application</div>
-        <div class="sidebar-item" onclick="showDoc('submit-application', this)"><div class="sidebar-dot" style="background:var(--accent);"></div>/submit-application</div>
-        <div class="sidebar-item" onclick="showDoc('triage-inbox', this)"><div class="sidebar-dot" style="background:var(--accent);"></div>/triage-inbox</div>
-        <div class="sidebar-item" onclick="showDoc('prep-interview', this)"><div class="sidebar-dot" style="background:var(--accent);"></div>/prep-interview</div>
-
-        <div class="sidebar-group-label">Agents</div>
-        <div class="sidebar-item" onclick="showDoc('job-fit-screener', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>job-fit-screener</div>
-        <div class="sidebar-item" onclick="showDoc('application-reviewer', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>application-reviewer</div>
-        <div class="sidebar-item" onclick="showDoc('company-research', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>company-research</div>
-        <div class="sidebar-item" onclick="showDoc('tracker-auditor', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>tracker-auditor</div>
-
-        <div class="sidebar-group-label">Scripts</div>
-        <div class="sidebar-item" onclick="showDoc('render-resume', this)"><div class="sidebar-dot" style="background:var(--cyan);"></div>render_resume.py</div>
-        <div class="sidebar-item" onclick="showDoc('add-lead', this)"><div class="sidebar-dot" style="background:var(--cyan);"></div>add_lead.py</div>
-        <div class="sidebar-item" onclick="showDoc('update-pipeline', this)"><div class="sidebar-dot" style="background:var(--cyan);"></div>update_pipeline.py</div>
-
-        <div class="sidebar-group-label">Hooks</div>
-        <div class="sidebar-item" onclick="showDoc('check-emdash', this)"><div class="sidebar-dot" style="background:var(--yellow);"></div>check_emdash.py</div>
-        <div class="sidebar-item" onclick="showDoc('guard-delete', this)"><div class="sidebar-dot" style="background:var(--yellow);"></div>guard_delete.py</div>
-        <div class="sidebar-item" onclick="showDoc('update-artifact', this)"><div class="sidebar-dot" style="background:var(--yellow);"></div>update_artifact.py</div>
-        <div class="sidebar-item" onclick="showDoc('session-cheatsheet', this)"><div class="sidebar-dot" style="background:var(--yellow);"></div>session cheat sheet</div>
-
-        <div class="sidebar-group-label">Config &amp; Profile</div>
-        <div class="sidebar-item" onclick="showDoc('config', this)"><div class="sidebar-dot" style="background:var(--green);"></div>job-search.config.json</div>
-        <div class="sidebar-item" onclick="showDoc('voice-profile', this)"><div class="sidebar-dot" style="background:var(--green);"></div>voice-profile.md</div>
-
-        <div class="sidebar-group-label">Interview Prep</div>
-        <div class="sidebar-item" onclick="showDoc('prep-interview', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>/prep-interview</div>
-        <div class="sidebar-item" onclick="showDoc('story-library', this)"><div class="sidebar-dot" style="background:var(--purple);"></div>star-stories.md</div>
-      </div>
-
-      <!-- ── Doc panels ── -->
-      <div>
-
-        <!-- /new-application -->
-        <div id="doc-new-application" class="doc-panel active">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">/new-application</div>
-              <div class="doc-type-badge pill pill-blue">Skill — slash command</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/new-application/SKILL.md</span></div>
-            <div class="doc-desc">Scaffolds a complete, tailored application folder from a single job posting. Handles everything from JD capture through resume tailoring, tracker entry, and final QA — without inventing anything beyond real experience.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>How to use</h3>
-            <p>Type <code style="color:var(--accent);background:#6c8cff14;padding:2px 7px;border-radius:4px;">/new-application</code> in Claude Code, then paste a job URL or the full job description text. The skill runs all steps automatically.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>Steps — in order</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Load profile.</strong> Reads job-search.config.json for canonical figures, real experience, voice rules, and file paths. This is the single source of truth — nothing can be claimed beyond it.</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>Capture the JD.</strong> Creates the company folder under applications/ and writes a .md file with title, company, location, salary, posting URL, ATS source, and the full requirements text.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Screen fit (optional).</strong> For unclear fits, dispatches the job-fit-screener agent before investing tailoring effort. Skipped for obviously strong matches.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>Tailor the resume.</strong> Inspects the base .docx paragraph structure, decides edits by reading the JD, writes an edits.json spec, and renders a tailored copy via render_resume.py — with a dry-run diff before writing.</div></li>
-              <li><div class="doc-step-num">5</div><div class="doc-step-text"><strong>Cover letter / outreach (only if warranted).</strong> Default is resume-only. If justified, reads voice-profile.md and drafts in Daniel's style. Em-dash hook auto-checks on save.</div></li>
-              <li><div class="doc-step-num">6</div><div class="doc-step-text"><strong>Add a Leads row.</strong> Calls add_lead.py with a dry-run first. Deduplicates on posting URL. Refuses partial writes if the tracker is open in Excel.</div></li>
-              <li><div class="doc-step-num">7</div><div class="doc-step-text"><strong>QA gate.</strong> Dispatches the application-reviewer agent to check figure consistency, no invented claims, voice compliance, and JD keyword coverage. Returns a PASS / NEEDS FIXES punch list.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Hard constraints</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never submits or sends</strong> — this skill only stages drafts.</div></li>
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never invents or inflates</strong> — all figures must match canonical_figures exactly.</div></li>
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never deletes</strong> — superseded files are moved to an archive folder.</div></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- /submit-application -->
-        <div id="doc-submit-application" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">/submit-application</div>
-              <div class="doc-type-badge pill pill-blue">Skill — slash command</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/submit-application/SKILL.md</span></div>
-            <div class="doc-desc">Run the moment an application is actually submitted. Turns the post-submit checklist into one command — tracker update, snapshot, calendar reminder, and follow-up draft.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>When to use</h3>
-            <p>Run immediately after you hit Apply on a job. This skill <em>records</em> a submission — it does not submit one. Provide the company name and role; the rest is looked up automatically from the config and tracker.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>Steps — in order</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Load profile.</strong> Reads job-search.config.json for paths, tracker schema, and follow-up timing (first nudge = day 7, second = day 14).</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>Update the tracker.</strong> Runs update_pipeline.py with a dry-run first. Sets Stage to "Applied", Last Activity to today, and Next Action to the follow-up date. If the tracker is open in Excel, it stops and tells you to close it.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Snapshot what was sent.</strong> Creates a submitted_{date}/ folder and copies (never moves) the exact resume, cover letter, and JD into it. Writes a submission.md recording company, role, date, URL, ATS, files, and resume version.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>Calendar reminder.</strong> Creates an all-day Google Calendar event on follow-up day titled "Follow up: {Company} - {Role}" with the posting URL in the description. Falls back gracefully if the Calendar MCP is unavailable.</div></li>
-              <li><div class="doc-step-num">5</div><div class="doc-step-text"><strong>Stage a follow-up draft.</strong> Writes a short, natural follow-up message in Daniel's voice for use on day 7. Reads voice-profile.md first. No em-dashes. Does not send it.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Hard constraints</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never submits or sends</strong> — records and stages only.</div></li>
-              <li><div class="doc-rule-icon">🔒</div><div class="doc-rule-text"><strong>Only update_pipeline.py may write the tracker</strong> — no ad-hoc edits via any other path.</div></li>
-              <li><div class="doc-rule-icon">📋</div><div class="doc-rule-text"><strong>Snapshot by copy, never move</strong> — original sent files remain in place.</div></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- /triage-inbox -->
-        <div id="doc-triage-inbox" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">/triage-inbox</div>
-              <div class="doc-type-badge pill pill-blue">Skill — slash command</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/triage-inbox/SKILL.md</span></div>
-            <div class="doc-desc">Sweeps the Gmail inbox(es) for recruiter and ATS replies, classifies each, cross-references the tracker, and proposes next actions. Closes the loop between "Applied" and what actually came back. Read-and-recommend — it never auto-replies, archives, or deletes.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Steps — in order</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Load profile + inbox map.</strong> Reads the config and recalls the inbox split (primary account = application/ATS replies; secondary = LinkedIn InMail). Sweeps whatever the connected Gmail account exposes, and flags any inbox it could not reach rather than pretending it was covered.</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>Search.</strong> Runs targeted Gmail searches over a time window (default 14 days) — recruiter language, known ATS senders (Greenhouse, Lever, Ashby, Workday, Rippling), and each company currently active in the Pipeline. Skips job-alert and marketing blasts.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Classify.</strong> Buckets each thread: interview/screen request, scheduling, recruiter question, rejection, offer, no-action acknowledgement, or other.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>Reconcile with the tracker.</strong> Matches each thread to a Pipeline row, notes the current stage, and flags mismatches — like an interview request on a row still marked "Applied."</div></li>
-              <li><div class="doc-step-num">5</div><div class="doc-step-text"><strong>Produce a triage table.</strong> One row per thread — company, what arrived, current stage, suggested action, tracker update — sorted with interviews and time-sensitive items first.</div></li>
-              <li><div class="doc-step-num">6</div><div class="doc-step-text"><strong>Stage the follow-through.</strong> Gives the exact update_pipeline.py dry-run command, offers to dispatch company-research for a prep brief, and can draft a reply in Daniel's voice staged as a Gmail draft (never sent).</div></li>
-              <li><div class="doc-step-num">7</div><div class="doc-step-text"><strong>Summarize.</strong> Counts by category, what needs action today, and anything gone quiet past the nudge window.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Reply categories</h3>
-            <div class="check-grid">
-              <div class="check-item"><div class="check-item-title">Interview / screen</div><div class="check-item-desc">They want to talk or schedule a screen — top priority</div></div>
-              <div class="check-item"><div class="check-item-title">Scheduling</div><div class="check-item-desc">Back-and-forth on a time for something already agreed</div></div>
-              <div class="check-item"><div class="check-item-title">Recruiter question</div><div class="check-item-desc">They asked for availability, salary, references, or a form</div></div>
-              <div class="check-item"><div class="check-item-title">Rejection</div><div class="check-item-desc">A no — mark the tracker row terminal</div></div>
-              <div class="check-item"><div class="check-item-title">Offer</div><div class="check-item-desc">An offer or a verbal</div></div>
-              <div class="check-item"><div class="check-item-title">No-action ack</div><div class="check-item-desc">Auto-confirmations ("we received your application")</div></div>
-            </div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Hard constraints</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never sends or replies</strong> — replies are staged as Gmail drafts only.</div></li>
-              <li><div class="doc-rule-icon">🗂️</div><div class="doc-rule-text"><strong>Never archives or deletes mail</strong> — read-only on the mailbox (labels are opt-in).</div></li>
-              <li><div class="doc-rule-icon">🔒</div><div class="doc-rule-text"><strong>Tracker only via update_pipeline.py</strong>, dry-run first — never advances a row on a guess.</div></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- job-fit-screener -->
-        <div id="doc-job-fit-screener" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">job-fit-screener</div>
-              <div class="doc-type-badge pill pill-purple">Agent — subagent</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/agents/job-fit-screener.md</span></div>
-            <div class="meta-row"><span class="meta-label">Tools:</span><span class="meta-val">Read, Glob, Grep, WebFetch, WebSearch</span></div>
-            <div class="doc-desc">Screens job postings so the candidate only invests tailoring effort where it pays off. A fast Tier 3 "skip" is more valuable than a hedge.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>What it produces</h3>
-            <div class="check-grid">
-              <div class="check-item"><div class="check-item-title">Title match</div><div class="check-item-desc">How closely the role maps to one of Daniel's target titles</div></div>
-              <div class="check-item"><div class="check-item-title">Stack overlap</div><div class="check-item-desc">Each JD-required tool marked as core / adjacent / gap</div></div>
-              <div class="check-item"><div class="check-item-title">Dealbreakers</div><div class="check-item-desc">Onsite-only, wrong location, clearance, seniority mismatch, or salary below market</div></div>
-              <div class="check-item"><div class="check-item-title">Tier 1–4 rating</div><div class="check-item-desc">With one-line rationale using the config's tier rubric</div></div>
-              <div class="check-item"><div class="check-item-title">Stack Match Note</div><div class="check-item-desc">One tight sentence ready to paste into the Leads sheet</div></div>
-              <div class="check-item"><div class="check-item-title">Recommendation</div><div class="check-item-desc">"Pursue now / pursue if time / skip"</div></div>
-            </div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Output format</h3>
-            <div class="output-block">ROLE: &lt;title&gt; @ &lt;company&gt;
-TITLE MATCH: &lt;strong/partial/weak&gt; - &lt;why&gt;
-STACK: core=[...] adjacent=[...] gaps=[...]
-DEALBREAKERS: &lt;list or NONE&gt;
-TIER: &lt;1-4&gt; - &lt;one-line rationale&gt;
-LEADS NOTE: &lt;one sentence for Stack Match Notes column&gt;
-RECOMMENDATION: pursue now / pursue if time / skip</div>
-          </div>
-        </div>
-
-        <!-- application-reviewer -->
-        <div id="doc-application-reviewer" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">application-reviewer</div>
-              <div class="doc-type-badge pill pill-purple">Agent — subagent</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/agents/application-reviewer.md</span></div>
-            <div class="meta-row"><span class="meta-label">Tools:</span><span class="meta-val">Read, Grep, Glob, Bash</span></div>
-            <div class="doc-desc">QA gate for a tailored application. Catches the one class of mistake that costs a candidate a role: inflated numbers, invented claims, voice violations, and missing JD keywords.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>The four checks</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Figure consistency.</strong> Scans every number and metric in the document. Flags anything that deviates from canonical_figures (e.g., a model count that isn't "1,300+"). Quotes the offending line.</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>No invented experience.</strong> Flags any claim, tool, or accomplishment not supported by real_experience in the config. Stretching scope beyond the config is a hard FAIL.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Voice compliance.</strong> In cover letters and messages only: flags em-dashes, en-dashes, double-hyphens, and preachy or self-congratulatory phrasing. Soft-flags where the draft doesn't sound like Daniel. Resumes are exempt from the dash rule.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>JD keyword coverage.</strong> Lists the JD's must-have skills and marks which appear in the resume. Flags important legitimate gaps that weren't surfaced.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Output format</h3>
-            <div class="output-block">VERDICT: PASS | NEEDS FIXES
-Figures:           PASS/FAIL - &lt;detail&gt;
-Invented claims:   PASS/FAIL - &lt;detail&gt;
-Voice:             PASS/FAIL - &lt;detail&gt;
-Keyword coverage:  &lt;covered&gt; / &lt;missing&gt;
-Cross-doc:         PASS/FAIL - &lt;detail&gt;
-
-FIXES (ordered, specific, copy-paste ready):
-1. ...</div>
-          </div>
-        </div>
-
-        <!-- company-research -->
-        <div id="doc-company-research" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">company-research</div>
-              <div class="doc-type-badge pill pill-purple">Agent — subagent</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/agents/company-research.md</span></div>
-            <div class="meta-row"><span class="meta-label">Tools:</span><span class="meta-val">Read, Glob, WebFetch, WebSearch</span></div>
-            <div class="doc-desc">Produces a short, high-signal prep brief on a company and role. Used before an interview or when deciding how to angle a cover letter. Favors recent, verifiable facts over filler.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>What the brief covers</h3>
-            <div class="check-grid">
-              <div class="check-item"><div class="check-item-title">What they do</div><div class="check-item-desc">2–3 sentences, plain language, no jargon</div></div>
-              <div class="check-item"><div class="check-item-title">Product / business model</div><div class="check-item-desc">How they make money and who their customers are</div></div>
-              <div class="check-item"><div class="check-item-title">Data / analytics signals</div><div class="check-item-desc">Stack hints, data team size, job posts, eng blog clues</div></div>
-              <div class="check-item"><div class="check-item-title">Recent news</div><div class="check-item-desc">Funding, launches, leadership changes, layoffs — dated</div></div>
-              <div class="check-item"><div class="check-item-title">Why Daniel fits</div><div class="check-item-desc">2–3 bullets tying core stack and real experience to the role</div></div>
-              <div class="check-item"><div class="check-item-title">Smart questions to ask</div><div class="check-item-desc">3–4 questions that show genuine understanding of the company</div></div>
-              <div class="check-item"><div class="check-item-title">Red flags / unknowns</div><div class="check-item-desc">Anything to verify or be cautious about</div></div>
-            </div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Behavior notes</h3>
-            <p>Returns the brief as a response — does not write files unless explicitly asked. Marks anything uncertain as such, and does not invent facts. Targets roughly one screen of content.</p>
-          </div>
-        </div>
-
-        <!-- tracker-auditor -->
-        <div id="doc-tracker-auditor" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">tracker-auditor</div>
-              <div class="doc-type-badge pill pill-purple">Agent — subagent</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/agents/tracker-auditor.md</span></div>
-            <div class="meta-row"><span class="meta-label">Tools:</span><span class="meta-val">Read, Glob, Grep, Bash</span></div>
-            <div class="doc-desc">Read-only hygiene auditor for the Excel tracker. Reports a prioritized punch list of issues. Never modifies anything — surfacing problems is its only job.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>The five checks</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Duplicates.</strong> Same company appearing twice in Leads, or twice in Pipeline.</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>Stale stages.</strong> An active Pipeline row whose Last Activity is more than 7 days old, or whose Next Action date has passed. These need a follow-up.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Missing data.</strong> Blank Date Added, Stage, or Last Activity where it should be set.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>Folder vs tracker mismatches.</strong> Application folders with no Pipeline row (applied but untracked) or Pipeline rows at "Applied" with no matching folder.</div></li>
-              <li><div class="doc-step-num">5</div><div class="doc-step-text"><strong>Leads not promoted.</strong> A Leads row marked "In pipeline? = Yes" but absent from Pipeline, or vice versa.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Output format</h3>
-            <div class="output-block">TRACKER AUDIT - &lt;date&gt;
-Health: &lt;clean | N issues&gt;
-
-NEEDS FOLLOW-UP (stale / past next-action):
-- &lt;Company&gt; (&lt;stage&gt;, last activity &lt;date&gt;): &lt;suggested next action&gt;
-
-DATA HYGIENE:
-- &lt;issue&gt; -&gt; &lt;fix&gt;
-
-FOLDER/TRACKER MISMATCH:
-- &lt;issue&gt; -&gt; &lt;fix&gt;</div>
-          </div>
-        </div>
-
-        <!-- render_resume.py -->
-        <div id="doc-render-resume" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">render_resume.py</div>
-              <div class="doc-type-badge pill pill-cyan">Python script</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/new-application/scripts/render_resume.py</span></div>
-            <div class="doc-desc">Formats-preserving .docx tailoring engine. Claude decides what to change by reading the JD; this script is the safe renderer that applies those changes while preserving all existing formatting.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>How it works</h3>
-            <p>Takes a base .docx and an edits.json spec, copies the base byte-for-byte, then applies targeted paragraph-text replacements. Only the text changes — fonts, styles, spacing, bold labels, and layout are all preserved.</p>
-            <p>Smart handling for "bold-label" lines like the skills section (e.g., <em>Technical Skills: SQL, Python…</em>): the bold label and colon are kept intact and only the body text after the colon is replaced, so it never inherits the wrong bold formatting.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>CLI flags</h3>
-            <div class="script-flag"><div class="flag-name">--base</div><div class="flag-desc">Path to the base resume .docx <span class="flag-req">required</span></div></div>
-            <div class="script-flag"><div class="flag-name">--out</div><div class="flag-desc">Output path for the tailored .docx</div></div>
-            <div class="script-flag"><div class="flag-name">--edits</div><div class="flag-desc">Path to the JSON edit spec ({"replacements": [{"index": N, "text": "..."}]})</div></div>
-            <div class="script-flag"><div class="flag-name">--list</div><div class="flag-desc">List all paragraphs with index numbers and exit — used to find which indices to edit</div></div>
-            <div class="script-flag"><div class="flag-name">--dry-run</div><div class="flag-desc">Print a diff of planned changes without writing any file</div></div>
-          </div>
-        </div>
-
-        <!-- add_lead.py -->
-        <div id="doc-add-lead" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">add_lead.py</div>
-              <div class="doc-type-badge pill pill-cyan">Python script</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/new-application/scripts/add_lead.py</span></div>
-            <div class="doc-desc">Appends a row to the tracker's Leads sheet atomically and safely. Handles deduplication, Excel lock detection, and partial-write prevention.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Safety model</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">⚛️</div><div class="doc-rule-text"><strong>Atomic write:</strong> Writes to a temp file in the same directory, then os.replace() onto the target. A crash mid-write never corrupts the tracker.</div></li>
-              <li><div class="doc-rule-icon">🔒</div><div class="doc-rule-text"><strong>Lock detection:</strong> If Excel has the file open, the replace fails with PermissionError. The script saves a .pending recovery file and exits with a clear message — no partial write is ever made to the real file.</div></li>
-              <li><div class="doc-rule-icon">🔁</div><div class="doc-rule-text"><strong>Deduplication:</strong> Deduplicates on posting URL first (most reliable), then falls back to company + role match. A company can have multiple distinct open roles, so it does not dedup on company name alone.</div></li>
-            </ul>
-          </div>
-
-          <div class="doc-section">
-            <h3>Key flags</h3>
-            <div class="script-flag"><div class="flag-name">--tracker</div><div class="flag-desc">Path to the .xlsx tracker <span class="flag-req">required</span></div></div>
-            <div class="script-flag"><div class="flag-name">--company</div><div class="flag-desc">Company name <span class="flag-req">required</span></div></div>
-            <div class="script-flag"><div class="flag-name">--role</div><div class="flag-desc">Job title / role</div></div>
-            <div class="script-flag"><div class="flag-name">--url</div><div class="flag-desc">Posting URL — used as the dedup key</div></div>
-            <div class="script-flag"><div class="flag-name">--tier</div><div class="flag-desc">Tier 1–4 from the fit screener</div></div>
-            <div class="script-flag"><div class="flag-name">--dry-run</div><div class="flag-desc">Print planned changes without writing</div></div>
-            <div class="script-flag"><div class="flag-name">--update</div><div class="flag-desc">If a matching lead exists (by URL), update its fields instead of skipping</div></div>
-            <div class="script-flag"><div class="flag-name">--force</div><div class="flag-desc">Add even if a matching lead exists (intentional duplicate)</div></div>
-          </div>
-        </div>
-
-        <!-- update_pipeline.py -->
-        <div id="doc-update-pipeline" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">update_pipeline.py</div>
-              <div class="doc-type-badge pill pill-cyan">Python script</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/submit-application/scripts/update_pipeline.py</span></div>
-            <div class="doc-desc">The only authorized writer to the Pipeline tracker sheet. Records application submissions with atomic writes, lock detection, stage downgrade prevention, and automatic Leads sheet sync.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Safety model</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">⚛️</div><div class="doc-rule-text"><strong>Atomic write:</strong> Same temp-file + os.replace() pattern as add_lead.py. A crash never leaves a corrupted tracker.</div></li>
-              <li><div class="doc-rule-icon">🔒</div><div class="doc-rule-text"><strong>Lock detection:</strong> If Excel has the file open, writes a .pending recovery file and exits cleanly. No partial write ever reaches the real tracker.</div></li>
-              <li><div class="doc-rule-icon">⬆️</div><div class="doc-rule-text"><strong>Stage downgrade guard:</strong> Maintains an ordered ranking of pipeline stages. Refuses to overwrite a later stage with an earlier one (e.g., "Phone Screen" → "Applied") unless --force is passed. Terminal outcomes (Rejected, Withdrawn, Offer) are always allowed.</div></li>
-              <li><div class="doc-rule-icon">🔗</div><div class="doc-rule-text"><strong>Leads sync:</strong> Automatically flips the "In pipeline?" column on the corresponding Leads row to "Yes". Safely skips formula-driven cells.</div></li>
-            </ul>
-          </div>
-
-          <div class="doc-section">
-            <h3>Key flags</h3>
-            <div class="script-flag"><div class="flag-name">--tracker</div><div class="flag-desc">Path to the .xlsx tracker <span class="flag-req">required</span></div></div>
-            <div class="script-flag"><div class="flag-name">--company</div><div class="flag-desc">Company name to find or create a row for <span class="flag-req">required</span></div></div>
-            <div class="script-flag"><div class="flag-name">--stage</div><div class="flag-desc">Pipeline stage to set (defaults to "Applied")</div></div>
-            <div class="script-flag"><div class="flag-name">--last-activity</div><div class="flag-desc">Free-text last activity string (e.g., "Applied 2026-06-06")</div></div>
-            <div class="script-flag"><div class="flag-name">--next-action</div><div class="flag-desc">Free-text next action string (e.g., "Follow up 2026-06-13")</div></div>
-            <div class="script-flag"><div class="flag-name">--resume-version</div><div class="flag-desc">Label for which resume version was sent</div></div>
-            <div class="script-flag"><div class="flag-name">--dry-run</div><div class="flag-desc">Print planned changes without writing</div></div>
-            <div class="script-flag"><div class="flag-name">--force</div><div class="flag-desc">Allow a stage to move backward (overrides the downgrade guard)</div></div>
-          </div>
-        </div>
-
-        <!-- check_emdash.py -->
-        <div id="doc-check-emdash" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">check_emdash.py</div>
-              <div class="doc-type-badge pill pill-yellow">Hook — PostToolUse</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/hooks/check_emdash.py</span></div>
-            <div class="meta-row"><span class="meta-label">Trigger:</span><span class="meta-val">PostToolUse (Write, Edit)</span></div>
-            <div class="doc-desc">Automatically scans any file Claude writes or edits. If the file looks like a cover letter, outreach message, or follow-up note and contains an em-dash or double-hyphen, it fires a visible warning.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Scope rules</h3>
-            <p>The hook fires only on files whose name matches terms like <em>cover_letter</em>, <em>_message</em>, <em>outreach</em>, <em>follow_up</em>, or <em>inmail</em>. It explicitly excludes resumes, JD captures, the tracker, and specs files — so it never false-alarms on legitimate content.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>Forbidden characters</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">—</div><div class="doc-rule-text"><strong>Em-dash</strong> (U+2014) — the most common accidental insertion</div></li>
-              <li><div class="doc-rule-icon">–</div><div class="doc-rule-text"><strong>En-dash</strong> (U+2013)</div></li>
-              <li><div class="doc-rule-icon">--</div><div class="doc-rule-text"><strong>Double-hyphen</strong> — common in programmatic text generation</div></li>
-            </ul>
-          </div>
-
-          <div class="doc-section">
-            <h3>Design intent</h3>
-            <p>Warn-only by design — the hook always exits 0 and never blocks work, even if it errors internally. The warning is surfaced as a visible system message so it can be acted on before the file is sent, not used as a hard gate that could interrupt a session.</p>
-          </div>
-        </div>
-
-        <!-- guard_delete.py -->
-        <div id="doc-guard-delete" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">guard_delete.py</div>
-              <div class="doc-type-badge pill pill-yellow">Hook — PreToolUse</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/hooks/guard_delete.py</span></div>
-            <div class="meta-row"><span class="meta-label">Trigger:</span><span class="meta-val">PreToolUse (Bash, PowerShell)</span></div>
-            <div class="doc-desc">Inspects every shell command before it runs. If it looks like a destructive file delete, fires a visible warning reminding to move to an archive folder instead.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Patterns it watches for</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">💻</div><div class="doc-rule-text"><strong>PowerShell:</strong> Remove-Item, Erase, Remove-ItemProperty, Rimraf</div></li>
-              <li><div class="doc-rule-icon">🐚</div><div class="doc-rule-text"><strong>POSIX shell:</strong> rm (with any flags), del, rmdir</div></li>
-            </ul>
-          </div>
-
-          <div class="doc-section">
-            <h3>Safe exceptions</h3>
-            <p>Commands that clearly target temp files or system temp paths are allowed through without a warning — patterns like <em>.pending</em>, <em>\temp\</em>, <em>/tmp/</em>, <em>$env:TEMP</em>, and <em>mkstemp</em> are recognized as safe and do not trigger the guard.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>Design intent</h3>
-            <p>Warn-only by design — always exits 0 and proceeds. The standing rule is "move, never delete" so superseded files can always be recovered. The hook is a nudge, not a blocker.</p>
-          </div>
-        </div>
-
-        <!-- update_artifact.py -->
-        <div id="doc-update-artifact" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">update_artifact.py</div>
-              <div class="doc-type-badge pill pill-yellow">Hook — Stop</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/hooks/update_artifact.py</span></div>
-            <div class="meta-row"><span class="meta-label">Trigger:</span><span class="meta-val">Stop (end of every session)</span></div>
-            <div class="doc-desc">Keeps this very page live. At the end of every Claude Code session it reads the git history and the tracker, then injects fresh figures into the artifact — and emits a sanitized twin that is safe to share. Pure Python: zero token cost.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>What it refreshes</h3>
-            <div class="check-grid">
-              <div class="check-item"><div class="check-item-title">Date &amp; time</div><div class="check-item-desc">Stamps the dashboard and footer with the last run time</div></div>
-              <div class="check-item"><div class="check-item-title">7 KPI cards</div><div class="check-item-desc">Leads, pipeline, applied, interviews, Tier 1, and more — from the tracker</div></div>
-              <div class="check-item"><div class="check-item-title">6 pipeline counts</div><div class="check-item-desc">Live stage breakdown computed from the Pipeline sheet</div></div>
-              <div class="check-item"><div class="check-item-title">Changelog</div><div class="check-item-desc">Regenerated from git log, auto-categorized System / Feature / Fix / Application</div></div>
-            </div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Two outputs, one run</h3>
-            <p><strong>Personal view</strong> — the full artifact with live names, companies, and pipeline detail. For Daniel's eyes.</p>
-            <p><strong>Shared view (demo)</strong> — an automatically sanitized twin where company names, recruiter contacts, and active-pipeline specifics are redacted, while every system feature and the full documentation stay intact. Safe to host or send to a friend. Both files are written on the same run, so the demo never drifts from the real one.</p>
-          </div>
-
-          <div class="doc-section">
-            <h3>How the markers work</h3>
-            <p>The HTML carries invisible <code style="color:var(--accent);background:#6c8cff14;padding:2px 6px;border-radius:4px;">&lt;!-- AUTO:X --&gt;</code> comment pairs. The script only ever rewrites the text between a marker pair, so hand-written copy and layout are never touched. Design is warn-only — any error exits cleanly and never interrupts a session.</p>
-          </div>
-        </div>
-
-        <!-- session cheat sheet -->
-        <div id="doc-session-cheatsheet" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">session cheat sheet</div>
-              <div class="doc-type-badge pill pill-yellow">Hook — SessionStart</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/command-cheatsheet.md</span></div>
-            <div class="meta-row"><span class="meta-label">Trigger:</span><span class="meta-val">SessionStart (every new session)</span></div>
-            <div class="doc-desc">Prints a quick-reference card at the start of every session: the four slash commands with their argument shapes, the four subagents, and the standing tracker rules. New sessions begin already knowing the toolkit — no need to rediscover it mid-conversation.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>What it shows</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">⌨️</div><div class="doc-rule-text"><strong>Skills:</strong> /new-application, /submit-application, /triage-inbox, /prep-interview — each with a one-line usage hint</div></li>
-              <li><div class="doc-rule-icon">🤖</div><div class="doc-rule-text"><strong>Subagents:</strong> job-fit-screener, application-reviewer, company-research, tracker-auditor</div></li>
-              <li><div class="doc-rule-icon">📏</div><div class="doc-rule-text"><strong>Standing rules:</strong> tracker writes via scripts only; stage drafts, never send without go-ahead</div></li>
-            </ul>
-          </div>
-
-          <div class="doc-section">
-            <h3>Design intent</h3>
-            <p>The note lives in a plain markdown file, so updating the cheat sheet is a text edit — no JSON or hook changes needed. The hook itself is a one-line <em>cat</em> command registered in .claude/settings.json.</p>
-          </div>
-        </div>
-
-        <!-- config -->
-        <div id="doc-config" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">job-search.config.json</div>
-              <div class="doc-type-badge pill pill-green">Config — single source of truth</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/job-search.config.json</span></div>
-            <div class="doc-desc">The single source of truth for the entire system. Every candidate-specific fact lives here. Skills, agents, and scripts read from it — nothing is hardcoded elsewhere. The whole toolkit is reusable for another person by swapping just this file and the base resume.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Top-level fields</h3>
-            <div class="config-field"><div class="config-key">candidate</div><div class="config-val">Name, email, location, work preference, current role and dates</div></div>
-            <div class="config-field"><div class="config-key">target_titles</div><div class="config-val">Priority-ordered list of target job titles (Analytics Engineer → Senior Data Analyst → …)</div></div>
-            <div class="config-field"><div class="config-key">core_stack</div><div class="config-val">Complete list of tools and technologies Daniel actually uses (SQL, dbt, Snowflake, Looker, etc.)</div></div>
-            <div class="config-field"><div class="config-key">canonical_figures</div><div class="config-val">The exact numbers every document must use — 1,300+ dbt models, 35+ partners, 30+ sources, etc. No deviation allowed.</div></div>
-            <div class="config-field"><div class="config-key">real_experience</div><div class="config-val">Five bullet-point descriptions of actual work done. Agents may claim nothing beyond this list.</div></div>
-            <div class="config-field"><div class="config-key">experience_nuances</div><div class="config-val">Guardrails for easily-inflated claims — e.g., CEP dashboards served ~5 internal PMs, not external client logins</div></div>
-            <div class="config-field"><div class="config-key">voice_rules</div><div class="config-val">Hard constraints for outgoing copy: no em-dashes, no double-hyphens, direct and non-preachy tone. Includes which file types are in-scope.</div></div>
-            <div class="config-field"><div class="config-key">outreach_style</div><div class="config-val">InMail requires a subject line. All messages end on a question. Tone is natural, not salesy.</div></div>
-            <div class="config-field"><div class="config-key">application_default</div><div class="config-val">"Resume-only by default." Cover letter or outreach only when the role warrants it.</div></div>
-            <div class="config-field"><div class="config-key">paths</div><div class="config-val">Canonical file paths for the base resume, applications directory, archive, and tracker</div></div>
-            <div class="config-field"><div class="config-key">tracker_schema</div><div class="config-val">Sheet names, column names, and which sheet is the source of truth (Pipeline)</div></div>
-            <div class="config-field"><div class="config-key">follow_up</div><div class="config-val">first_nudge_days: 7, second_nudge_days: 14</div></div>
-            <div class="config-field"><div class="config-key">tiers</div><div class="config-val">Definitions for Tier 1–4 used consistently by the screener and across the tracker</div></div>
-          </div>
-        </div>
-
-        <!-- voice-profile -->
-        <div id="doc-voice-profile" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">voice-profile.md</div>
-              <div class="doc-type-badge pill pill-green">Profile — writing style</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/voice-profile.md</span></div>
-            <div class="doc-desc">Captures how Daniel actually writes so generated cover letters, outreach, and follow-ups sound like him — not like generic AI. Built from real writing samples (2018–2020). Every drafting agent reads this before writing a word.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>The eight DNA traits</h3>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 1</div><div class="voice-trait-title">Warm and relationship-first</div><div class="voice-trait-desc">Writes to people, not at them. Often opens by referencing real shared context before stating a purpose.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 2</div><div class="voice-trait-title">Direct about intent</div><div class="voice-trait-desc">States the purpose in the first line or two. No throat-clearing or extended preamble.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 3</div><div class="voice-trait-title">Gracious, sometimes thanks twice</div><div class="voice-trait-desc">"Thank you again for extending this opportunity" — sincere, not performative.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 4</div><div class="voice-trait-title">Earnest and humble, never boastful</div><div class="voice-trait-desc">Honest about limits. No bravado. Confident through specificity, not superlatives.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 5</div><div class="voice-trait-title">Sequential rhythm for reasons</div><div class="voice-trait-desc">"One of the biggest things… Another aspect… The next thing… Lastly." This is the shape for "why this company" answers.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 6</div><div class="voice-trait-title">Conversational connectors</div><div class="voice-trait-desc">"This time around, however" / "Based on all the research I've conducted" / "I believe…"</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 7</div><div class="voice-trait-title">Contractions throughout</div><div class="voice-trait-desc">I've, haven't, I'll, don't. Never stiff or robotic.</div></div>
-            <div class="voice-trait"><div class="voice-trait-num">Trait 8</div><div class="voice-trait-title">Measured enthusiasm</div><div class="voice-trait-desc">Genuine and positive. One exclamation point at most in a professional message.</div></div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Calibration note</h3>
-            <p>Source samples are from 2018–2020 (student / early career). The warmth, directness, graciousness, and sequential structure are treated as durable personality traits. Formality and precision are dialed up one notch for senior Analytics / Data Engineering roles.</p>
-            <p>As newer writing samples from Daniel come in, this file should be updated to refine the profile further.</p>
-          </div>
-        </div>
-
-        <!-- prep-interview -->
-        <div id="doc-prep-interview" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">/prep-interview</div>
-              <div class="doc-type-badge pill pill-purple">Skill — slash command</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">.claude/skills/prep-interview/SKILL.md</span></div>
-            <div class="doc-desc">Generates a tailored interview prep guide for a specific company and role. Maps the STAR story library to likely behavioral questions, surfaces the strongest stories for that JD, and adds smart questions to ask. Grounded entirely in documented, manager-backed experience — no generic advice.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>Steps — in order</h3>
-            <ol class="doc-step-list">
-              <li><div class="doc-step-num">1</div><div class="doc-step-text"><strong>Load the story library.</strong> Reads star-stories.md in full. Only stories documented there can be used — no invention.</div></li>
-              <li><div class="doc-step-num">2</div><div class="doc-step-text"><strong>Load the JD.</strong> Reads the company's JD file from the application folder. If not found, asks the user to paste it.</div></li>
-              <li><div class="doc-step-num">3</div><div class="doc-step-text"><strong>Load the Pipeline row.</strong> Reads the tracker for current stage, key contact, and notes — read-only.</div></li>
-              <li><div class="doc-step-num">4</div><div class="doc-step-text"><strong>Run company research (optional).</strong> Dispatches the company-research agent if a prep brief doesn't already exist in the company folder.</div></li>
-              <li><div class="doc-step-num">5</div><div class="doc-step-text"><strong>Identify 3-5 likely behavioral questions</strong> based on the JD's emphasis, company stage, and interview stage.</div></li>
-              <li><div class="doc-step-num">6</div><div class="doc-step-text"><strong>Map stories to questions.</strong> For each question: recommends the strongest story, provides a 90-second spoken version, surfaces the manager quote to anchor it, and gives a backup story.</div></li>
-              <li><div class="doc-step-num">7</div><div class="doc-step-text"><strong>Surface smart questions to ask</strong> — derived from the JD and company research, not generic.</div></li>
-              <li><div class="doc-step-num">8</div><div class="doc-step-text"><strong>Pre-call checklist</strong> — interviewer LinkedIn, recent company news, format confirmation.</div></li>
-            </ol>
-          </div>
-
-          <div class="doc-section">
-            <h3>Hard constraints</h3>
-            <ul class="doc-rule-list">
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never invents a story</strong> — every narrative must exist verbatim in star-stories.md.</div></li>
-              <li><div class="doc-rule-icon">🚫</div><div class="doc-rule-text"><strong>Never fabricates a manager quote</strong> — quotes must be lifted exactly from the library.</div></li>
-              <li><div class="doc-rule-icon">📖</div><div class="doc-rule-text"><strong>Read-only</strong> — writes nothing to disk, only returns the prep guide as output.</div></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- story-library -->
-        <div id="doc-story-library" class="doc-panel">
-          <div class="doc-header">
-            <div class="doc-header-top">
-              <div class="doc-title">star-stories.md</div>
-              <div class="doc-type-badge pill pill-purple">Interview Prep — story library</div>
-            </div>
-            <div class="meta-row"><span class="meta-label">File:</span><span class="meta-val">job-search/interview-prep/star-stories.md</span></div>
-            <div class="doc-desc">10 interview-ready STAR stories extracted from four years of performance reviews at Discovery Education. Every story is grounded in documented, manager-attributed outcomes — not self-reported. Includes manager quotes, a competency index, and a quick-reference table mapping question patterns to the strongest stories.</div>
-          </div>
-
-          <div class="doc-section">
-            <h3>The 10 stories</h3>
-            <div class="check-grid">
-              <div class="check-item"><div class="check-item-title">#01 — CEP Monthly Impact Dashboard</div><div class="check-item-desc">Technical delivery · complex modeling · ARR impact · "a huge win in usability" (manager)</div></div>
-              <div class="check-item"><div class="check-item-title">#02 — Bot Traffic Analysis</div><div class="check-item-desc">Data quality · proactive problem identification · "significant positive business impact" (manager)</div></div>
-              <div class="check-item"><div class="check-item-title">#03 — Workflow Risk Escalation</div><div class="check-item-desc">Initiative · process improvement · "trusted reporting partner" (manager)</div></div>
-              <div class="check-item"><div class="check-item-title">#04 — Technical Communication</div><div class="check-item-desc">Stakeholder translation · "successfully communicates complex technical concepts to non-technical stakeholders" (manager)</div></div>
-              <div class="check-item"><div class="check-item-title">#05 — Balancing Ad-Hoc vs. Strategic</div><div class="check-item-desc">Delivery under pressure · prioritization · the Q2 rollback and what changed</div></div>
-              <div class="check-item"><div class="check-item-title">#06 — GA4 Migration</div><div class="check-item-desc">Cross-functional collaboration · migration delivery</div></div>
-              <div class="check-item"><div class="check-item-title">#07 — IP Location Attribution</div><div class="check-item-desc">Ambiguous technical requirements · identity resolution modeling</div></div>
-              <div class="check-item"><div class="check-item-title">#08 — CEP Support Ticket System</div><div class="check-item-desc">Process ownership · operational improvement · stakeholder trust</div></div>
-              <div class="check-item"><div class="check-item-title">#09 — 1,300+ dbt Model Ownership</div><div class="check-item-desc">Scale · reliability · documentation · code quality at large codebases</div></div>
-              <div class="check-item"><div class="check-item-title">#10 — CEP Partner Reporting</div><div class="check-item-desc">Customer impact · 35+ organizations · 1,000+ uses by 50+ users (manager-attributed)</div></div>
-            </div>
-          </div>
-
-          <div class="doc-section">
-            <h3>What makes this library defensible</h3>
-            <p>Every story is sourced from formal performance reviews — not self-reported anecdotes. Manager quotes are verbatim from Erinn Burroughs's written assessments. The library includes the Q2 2025 rollback story (Story 01 reflection) because honest failure-and-recovery narratives are more credible than spotless success stories. The /prep-interview skill only draws from this library, so nothing claimed in an interview can outrun what's documented here.</p>
-          </div>
-        </div>
-
-      </div><!-- /doc panels -->
-    </div><!-- /docs-layout -->
-
-  </div><!-- /container -->
-  </div><!-- /page-docs -->
-
-  <footer>
-    Built with Claude Code &nbsp;·&nbsp; Last updated <!-- AUTO:DATE -->July 18, 2026 · 10:49 PM<!-- /AUTO:DATE --> &nbsp;·&nbsp; 17 components
-  </footer>
-
-  <script>
-    function switchTab(name, btn) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('page-' + name).classList.add('active');
-      btn.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function showDoc(id, item) {
-      document.querySelectorAll('.doc-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-      document.getElementById('doc-' + id).classList.add('active');
-      item.classList.add('active');
-      document.querySelector('.doc-panel.active').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function showDocMobile(id) {
-      document.querySelectorAll('.doc-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-      const panel = document.getElementById('doc-' + id);
-      if (panel) {
-        panel.classList.add('active');
-        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      // keep sidebar in sync in case user rotates to desktop
-      const match = Array.from(document.querySelectorAll('.sidebar-item'))
-        .find(el => (el.getAttribute('onclick') || '').includes("'" + id + "'"));
-      if (match) match.classList.add('active');
-    }
-  </script>
-
-</body>
+<div class="wrap">
+
+<header>
+  <div class="topbar">
+    <a class="wordmark" href="https://drim1561.github.io" style="text-decoration:none;">the-pipeline_</a>
+    <nav class="topnav"><span class="navcur">dashboard</span><a class="backlink" href="overview.html">about</a><a class="backlink" href="docs.html">docs</a><a class="backlink" href="https://drim1561.github.io">portfolio</a></nav>
+  </div>
+  <h1>The search, measured.</h1>
+  <p class="dek">You asked how the search is going. This is the live answer,
+  pulled straight from my tracker: <strong>every number on this page updates
+  automatically</strong> as I work the pipeline.</p>
+  <p class="stamp">live from the tracker &middot; shared view &middot; refreshed <!-- AUTO:DATE -->September 2, 2026 · 7:25 AM<!-- /AUTO:DATE --></p>
+</header>
+
+<!-- AUTO:HERO_STATS --><div class="statrow hero"><div class="stat"><span class="fig">129</span><span class="cap">leads tracked</span></div><div class="stat"><span class="fig">40</span><span class="cap">applications submitted</span></div><div class="stat"><span class="fig">25</span><span class="cap">interviews &amp; screens</span></div><div class="stat"><span class="fig">2</span><span class="cap">rounds in play now</span></div><div class="stat"><span class="fig">25</span><span class="cap">closed out</span></div></div><!-- /AUTO:HERO_STATS -->
+
+<section>
+  <span class="eyebrow">The funnel</span>
+  <h2>From lead to offer, stop by stop</h2>
+  <p class="lede">Every lead rides the same line. The orange ring is the application
+  gate, the one stop the system can never pass on its own. The small percentage under
+  each station is conversion from the previous one.</p>
+  <div class="mapbox">
+  <!-- AUTO:FUNNEL --><svg class="linemap" viewBox="0 0 960 250" width="960" height="250" role="img" aria-label="Funnel. Leads 129. In pipeline 48. Applied 40. Screened 15. Interviewed 10. Offers 1."><path class="track" pathLength="1000" d="M30,150 C65,150 70,100 100,100 S225,150 260,150 S385,100 420,100 S545,150 580,150 S705,100 740,100 S865,150 900,150"/><g class="s1"><title>Leads inventory: every captured posting, tiered 1-4.</title><circle class="stop" cx="100" cy="100" r="9"/><text x="100" y="76" text-anchor="middle">LEADS</text><text class="cnt" x="100" y="54" text-anchor="middle">129</text><text class="sub" x="100" y="32" text-anchor="middle">inventory · tiered 1-4</text></g><g class="s2"><title>Rows worked in the Pipeline sheet, closed outcomes included. Not a strict subset of the leads inventory.</title><circle class="stop" cx="260" cy="150" r="9"/><text x="260" y="184" text-anchor="middle">PIPELINE</text><text class="cnt" x="260" y="208" text-anchor="middle">48</text><text class="sub" x="260" y="230" text-anchor="middle">21 from leads · 27 direct/inbound</text></g><g class="s3"><title>Reached a submitted application. The system stages; the candidate submits.</title><circle class="gatering" cx="420" cy="100" r="14"/><circle class="gatecore" cx="420" cy="100" r="5"/><text class="gatelabel" x="420" y="76" text-anchor="middle">APPLIED</text><text class="cnt" x="420" y="54" text-anchor="middle">40</text><text class="sub" x="420" y="32" text-anchor="middle">83% of pipeline</text></g><g class="s4"><title>At least one recruiter or phone screen, by stage or logged debrief.</title><circle class="stop" cx="580" cy="150" r="9"/><text x="580" y="184" text-anchor="middle">SCREEN</text><text class="cnt" x="580" y="208" text-anchor="middle">15</text><text class="sub" x="580" y="230" text-anchor="middle">38% of applied</text></g><g class="s5"><title>Reached a formal round beyond the first screen, by stage or logged debrief.</title><circle class="stop" cx="740" cy="100" r="9"/><text x="740" y="76" text-anchor="middle">INTERVIEW</text><text class="cnt" x="740" y="54" text-anchor="middle">10</text><text class="sub" x="740" y="32" text-anchor="middle">67% of screened</text></g><g class="s6"><title>Offers received.</title><circle class="stop" cx="900" cy="150" r="9"/><text x="900" y="184" text-anchor="middle">OFFER</text><text class="cnt" x="900" y="208" text-anchor="middle">1</text><text class="sub" x="900" y="230" text-anchor="middle">10% of interviews</text></g></svg><!-- /AUTO:FUNNEL -->
+  </div>
+  <!-- AUTO:FUNNEL_NOTES --><p class="note">Stage history is not stored, so the later stations count best evidence: current stage or a logged interview debrief. 21 of 48 pipeline rows were promoted from the leads inventory; the rest arrived through recruiters, referrals, and direct outreach, so the first hop is not a strict subset.</p><!-- /AUTO:FUNNEL_NOTES -->
+
+  <span class="kicker">How the closed ones ended</span>
+  <!-- AUTO:OUTCOMES --><div class="bars"><div class="row"><span class="lbl">Rejected</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">14 <span class="pct">· 56%</span></span></div><div class="row"><span class="lbl">No response</span><span class="track"><span class="fill" style="width:36%"></span></span><span class="val">5 <span class="pct">· 20%</span></span></div><div class="row"><span class="lbl">Role closed</span><span class="track"><span class="fill" style="width:14%"></span></span><span class="val">2 <span class="pct">· 8%</span></span></div><div class="row"><span class="lbl">Didn&#x27;t pursue</span><span class="track"><span class="fill gate" style="width:14%"></span></span><span class="val">2 <span class="pct">· 8%</span></span></div><div class="row"><span class="lbl">Offer accepted</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="val">1 <span class="pct">· 4%</span></span></div><div class="row"><span class="lbl">I declined</span><span class="track"><span class="fill gate" style="width:7%"></span></span><span class="val">1 <span class="pct">· 4%</span></span></div></div><!-- /AUTO:OUTCOMES -->
+</section>
+
+
+<section>
+  <span class="eyebrow">Momentum</span>
+  <h2>Interviews, month over month</h2>
+  <p class="lede">Counted from logged debriefs only. Real conversations with real
+  companies, not prep sheets or thank-you notes.</p>
+  <!-- AUTO:MOMENTUM_STATS --><div class="statrow"><div class="stat"><span class="fig">3</span><span class="cap">last 30 days</span></div><div class="stat"><span class="fig">15</span><span class="cap">companies interviewed</span></div></div><!-- /AUTO:MOMENTUM_STATS -->
+
+  <div class="ctabs">
+    <button class="ctab active" type="button" data-pane="month" aria-pressed="true">by month</button>
+    <button class="ctab" type="button" data-pane="week" aria-pressed="false">by week</button>
+  </div>
+  <!-- AUTO:MOMENTUM_CHART --><div class="chartpane" data-pane="month"><svg class="mchart" viewBox="0 0 436 172" width="436" height="172" role="img" aria-label="Logged interviews by month. May 2026: 2; June 2026: 7; July 2026: 13; August 2026: 3."><line class="base" x1="20" y1="138" x2="416" y2="138"/><g><title>May 2026 · 2 logged</title><rect class="bar" x="30" y="124" width="64" height="14" rx="4"/><rect class="bar" x="30" y="134" width="64" height="4"/></g><text class="v" x="62" y="116" text-anchor="middle">2</text><text class="m" x="62" y="160" text-anchor="middle">MAY</text><g><title>June 2026 · 7 logged</title><rect class="bar" x="134" y="91" width="64" height="47" rx="4"/><rect class="bar" x="134" y="134" width="64" height="4"/></g><text class="v" x="166" y="83" text-anchor="middle">7</text><text class="m" x="166" y="160" text-anchor="middle">JUN</text><g><title>July 2026 · 13 logged</title><rect class="bar" x="238" y="50" width="64" height="88" rx="4"/><rect class="bar" x="238" y="134" width="64" height="4"/></g><text class="v" x="270" y="42" text-anchor="middle">13</text><text class="m" x="270" y="160" text-anchor="middle">JUL</text><g><title>August 2026 · 3 logged</title><rect class="bar" x="342" y="118" width="64" height="20" rx="4"/><rect class="bar" x="342" y="134" width="64" height="4"/></g><text class="v" x="374" y="110" text-anchor="middle">3</text><text class="m" x="374" y="160" text-anchor="middle">AUG</text></svg></div><div class="chartpane" data-pane="week" hidden><svg class="mchart" viewBox="0 0 808 172" width="808" height="172" role="img" aria-label="Logged interviews by week. week of June 15: 1; week of June 22: 1; week of June 29: 3; week of July 6: 2; week of July 13: 2; week of July 20: 6; week of July 27: 1; week of August 3: 0; week of August 10: 2; week of August 17: 1; week of August 24: 0; week of August 31: 0."><line class="base" x1="20" y1="138" x2="788" y2="138"/><g><title>Week of June 15 · 1 logged: Spring Health</title><rect class="bar" x="30" y="123" width="44" height="15" rx="4"/><rect class="bar" x="30" y="134" width="44" height="4"/></g><text class="v" x="52" y="115" text-anchor="middle">1</text><text class="m" x="52" y="160" text-anchor="middle">JUN 15</text><g><title>Week of June 22 · 1 logged: Discord</title><rect class="bar" x="94" y="123" width="44" height="15" rx="4"/><rect class="bar" x="94" y="134" width="44" height="4"/></g><text class="v" x="116" y="115" text-anchor="middle">1</text><text class="m" x="116" y="160" text-anchor="middle">JUN 22</text><g><title>Week of June 29 · 3 logged: Strategus, Wayvia</title><rect class="bar" x="158" y="94" width="44" height="44" rx="4"/><rect class="bar" x="158" y="134" width="44" height="4"/></g><text class="v" x="180" y="86" text-anchor="middle">3</text><text class="m" x="180" y="160" text-anchor="middle">JUN 29</text><g><title>Week of July 6 · 2 logged: Datasite, Optomi</title><rect class="bar" x="222" y="109" width="44" height="29" rx="4"/><rect class="bar" x="222" y="134" width="44" height="4"/></g><text class="v" x="244" y="101" text-anchor="middle">2</text><text class="m" x="244" y="160" text-anchor="middle">JUL 6</text><g><title>Week of July 13 · 2 logged: Agility Partners, Optomi</title><rect class="bar" x="286" y="109" width="44" height="29" rx="4"/><rect class="bar" x="286" y="134" width="44" height="4"/></g><text class="v" x="308" y="101" text-anchor="middle">2</text><text class="m" x="308" y="160" text-anchor="middle">JUL 13</text><g><title>Week of July 20 · 6 logged: Datasite, Discord, EDO, Optomi, TRSS</title><rect class="bar" x="350" y="50" width="44" height="88" rx="4"/><rect class="bar" x="350" y="134" width="44" height="4"/></g><text class="v" x="372" y="42" text-anchor="middle">6</text><text class="m" x="372" y="160" text-anchor="middle">JUL 20</text><g><title>Week of July 27 · 1 logged: Datasite</title><rect class="bar" x="414" y="123" width="44" height="15" rx="4"/><rect class="bar" x="414" y="134" width="44" height="4"/></g><text class="v" x="436" y="115" text-anchor="middle">1</text><text class="m" x="436" y="160" text-anchor="middle">JUL 27</text><text class="v" x="500" y="130" text-anchor="middle">0</text><text class="m" x="500" y="160" text-anchor="middle">AUG 3</text><g><title>Week of August 10 · 2 logged: Vanta</title><rect class="bar" x="542" y="109" width="44" height="29" rx="4"/><rect class="bar" x="542" y="134" width="44" height="4"/></g><text class="v" x="564" y="101" text-anchor="middle">2</text><text class="m" x="564" y="160" text-anchor="middle">AUG 10</text><g><title>Week of August 17 · 1 logged: Vanta</title><rect class="bar" x="606" y="123" width="44" height="15" rx="4"/><rect class="bar" x="606" y="134" width="44" height="4"/></g><text class="v" x="628" y="115" text-anchor="middle">1</text><text class="m" x="628" y="160" text-anchor="middle">AUG 17</text><text class="v" x="692" y="130" text-anchor="middle">0</text><text class="m" x="692" y="160" text-anchor="middle">AUG 24</text><text class="v" x="756" y="130" text-anchor="middle">0</text><text class="m" x="756" y="160" text-anchor="middle">AUG 31</text></svg></div><!-- /AUTO:MOMENTUM_CHART -->
+
+  <span class="kicker">Upcoming interviews</span>
+  <!-- AUTO:UPCOMING --><p class="note">Nothing on the calendar yet.</p><p class="note">+ 2 more rounds in play, awaiting scheduling.</p><!-- /AUTO:UPCOMING -->
+
+  <span class="kicker">Rounds in play right now</span>
+  <!-- AUTO:ROUNDS_LIVE --><ul class="journey"><li class="hot"><span class="dot"></span><h3><span class="st">INTERVIEW R4 - ONSITE</span>Vanta</h3><p class="meta">last interview 2026-08-18</p></li><li><span class="dot"></span><h3><span class="st">INTERVIEW R1 - TECHNICAL ASSESSMENT</span>EDO<span class="jpay">$160K-$190K + equity</span></h3><p class="meta">last interview 2026-07-22</p></li></ul><!-- /AUTO:ROUNDS_LIVE -->
+</section>
+
+<section>
+  <span class="eyebrow">Industries</span>
+  <h2>Where I've been applying</h2>
+  <p class="lede">Every pipeline company, grouped by sector. Two rows for the same
+  company means two separate applications there.</p>
+  <!-- AUTO:INDUSTRIES --><div class="bars"><div class="row"><span class="lbl">Fintech</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">9 <span class="pct">· 19%</span></span></div><div class="row"><span class="lbl">Software &amp; SaaS</span><span class="track"><span class="fill" style="width:78%"></span></span><span class="val">7 <span class="pct">· 15%</span></span></div><div class="row"><span class="lbl">Agencies &amp; staffing</span><span class="track"><span class="fill" style="width:67%"></span></span><span class="val">6 <span class="pct">· 12%</span></span></div><div class="row"><span class="lbl">Healthcare</span><span class="track"><span class="fill" style="width:56%"></span></span><span class="val">5 <span class="pct">· 10%</span></span></div><div class="row"><span class="lbl">EdTech</span><span class="track"><span class="fill" style="width:44%"></span></span><span class="val">4 <span class="pct">· 8%</span></span></div><div class="row"><span class="lbl">Security</span><span class="track"><span class="fill" style="width:33%"></span></span><span class="val">3 <span class="pct">· 6%</span></span></div><div class="row"><span class="lbl">Media &amp; adtech</span><span class="track"><span class="fill" style="width:33%"></span></span><span class="val">3 <span class="pct">· 6%</span></span></div><div class="row"><span class="lbl">Gov &amp; defense data</span><span class="track"><span class="fill" style="width:33%"></span></span><span class="val">3 <span class="pct">· 6%</span></span></div><div class="row"><span class="lbl">Data &amp; analytics</span><span class="track"><span class="fill" style="width:22%"></span></span><span class="val">2 <span class="pct">· 4%</span></span></div><div class="row"><span class="lbl">Consumer tech</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">1 <span class="pct">· 2%</span></span></div><div class="row"><span class="lbl">Climate &amp; energy</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">1 <span class="pct">· 2%</span></span></div><div class="row"><span class="lbl">Other</span><span class="track"><span class="fill" style="width:44%"></span></span><span class="val">4 <span class="pct">· 8%</span></span></div></div><!-- /AUTO:INDUSTRIES -->
+  <p class="note">Sectors are hand-tagged in the refresh script; a new company lands
+  in Other until tagged.</p>
+</section>
+
+
+
+<a class="nextstop" href="docs.html">
+  <svg width="54" height="26" viewBox="0 0 54 26" aria-hidden="true">
+    <path class="ns-track" d="M2,13 H30"/><circle class="ns-stop" cx="42" cy="13" r="8"/>
+  </svg>
+  <span class="ns-body">
+    <span class="ns-eyebrow">next stop</span>
+    <span class="ns-title">How the system is built</span>
+    <span class="ns-sub">The moving parts under the hood.</span>
+  </span>
+  <span class="ns-arrow" aria-hidden="true">&rarr;</span>
+</a>
+
+<footer>
+  <span>built on claude code</span>
+  <span>refreshed <!-- AUTO:DATE -->September 2, 2026 · 7:25 AM<!-- /AUTO:DATE --></span>
+  <span><a href="overview.html">about the-pipeline</a></span><span><a href="docs.html">documentation</a></span><span><a href="https://drim1561.github.io">daniel rim &middot; portfolio</a></span>
+</footer>
+
+</div>
+<script>
+  document.querySelectorAll('.ctab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.ctab').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+      document.querySelectorAll('.chartpane').forEach(function (p) {
+        p.hidden = p.dataset.pane !== btn.dataset.pane;
+      });
+    });
+  });
+</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6366623e7b5f4c34bed976edca4778a6"}'></script><!-- End Cloudflare Web Analytics --></body>
 </html>

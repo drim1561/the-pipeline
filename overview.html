@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='16'%20cy='16'%20r='12'%20fill='none'%20stroke='%232b50e0'%20stroke-width='4'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='4'%20fill='%23c9511d'/%3E%3C/svg%3E">
+<title>the-pipeline — a copilot, not an autopilot</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --ink: #1a1d27;
+    --muted: #5d6373;
+    --faint: #d8dbe4;
+    --line: #2b50e0;
+    --line-soft: #dfe5fb;
+    --gate: #c9511d;
+    --gate-soft: #f8e6dc;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+    --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+      --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --ink: #1a1d27; --muted: #5d6373; --faint: #d8dbe4;
+    --line: #2b50e0; --line-soft: #dfe5fb; --gate: #c9511d; --gate-soft: #f8e6dc;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+    --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
+  }
+
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.7;
+    padding: 4rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; }
+  .prose { max-width: 40rem; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: baseline;
+            gap: 0.5rem 2rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .topnav { display: flex; gap: 1.6rem; flex-wrap: wrap; }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.06em; color: var(--line);
+  }
+  .backlink {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--line); text-underline-offset: 3px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.12; font-weight: 650;
+    letter-spacing: -0.02em; margin: 0.75rem 0 1rem; text-wrap: balance;
+    max-width: 22ch;
+  }
+  .dek { font-size: 1.1rem; color: var(--muted); margin: 0; max-width: 38rem; }
+  .dek strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- transit line map ---------- */
+  .mapbox { overflow-x: auto; margin: 3rem -1.25rem 0; padding: 0 1.25rem; }
+  .linemap { min-width: 920px; display: block; }
+  .linemap .track {
+    fill: none; stroke: var(--line); stroke-width: 5; stroke-linecap: round;
+  }
+  .linemap .stop { fill: var(--paper); stroke: var(--line); stroke-width: 4; }
+  .linemap .gatering { fill: var(--paper); stroke: var(--gate); stroke-width: 4; }
+  .linemap .gatecore { fill: var(--gate); }
+  .linemap text {
+    font-family: var(--mono); font-size: 12.5px; fill: var(--ink); font-weight: 600;
+  }
+  .linemap .sub { fill: var(--muted); font-weight: 400; font-size: 11px; }
+  .linemap .gatelabel { fill: var(--gate); }
+  @media (prefers-reduced-motion: no-preference) {
+    .linemap .track {
+      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      animation: draw 2.2s cubic-bezier(.4,0,.2,1) 0.2s forwards;
+    }
+    .linemap circle, .linemap text { opacity: 0; animation: appear 0.5s ease forwards; }
+    .linemap .s1 { animation-delay: 0.35s; } .linemap .s2 { animation-delay: 0.6s; }
+    .linemap .s3 { animation-delay: 0.85s; } .linemap .s4 { animation-delay: 1.1s; }
+    .linemap .s5 { animation-delay: 1.35s; } .linemap .s6 { animation-delay: 1.6s; }
+    .linemap .s7 { animation-delay: 1.85s; } .linemap .s8 { animation-delay: 2.1s; }
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes appear { to { opacity: 1; } }
+
+  section { margin-top: 4.5rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600;
+    display: block; margin-bottom: 0.6rem;
+  }
+  h2 {
+    font-size: 1.55rem; font-weight: 650; letter-spacing: -0.015em;
+    margin: 0 0 0.5rem; text-wrap: balance;
+  }
+  .lede { color: var(--muted); margin: 0 0 2rem; max-width: 38rem; }
+
+  /* ---------- vertical journey rail ---------- */
+  .journey { list-style: none; margin: 2.5rem 0 0; padding: 0; }
+  .journey li {
+    display: grid; grid-template-columns: 3rem 1fr; gap: 0 1rem;
+    position: relative; padding-bottom: 2.2rem;
+  }
+  .journey li::before {
+    content: ""; position: absolute; left: 1.4rem; top: 0.4rem; bottom: -0.4rem;
+    width: 4px; background: var(--line); border-radius: 2px;
+  }
+  .journey li:last-child::before { bottom: auto; height: 1rem; }
+  .journey .dot {
+    position: relative; z-index: 1; margin-top: 0.35rem;
+    width: 1rem; height: 1rem; border-radius: 50%; justify-self: center;
+    background: var(--paper); border: 4px solid var(--line); box-sizing: border-box;
+    grid-row: 1 / span 2;
+  }
+  .journey li.gate .dot {
+    width: 1.5rem; height: 1.5rem; margin-top: 0.15rem;
+    border-color: var(--gate); box-shadow: 0 0 0 5px var(--gate-soft);
+  }
+  .journey h3 {
+    margin: 0; font-size: 1.02rem; font-weight: 650; letter-spacing: -0.005em;
+  }
+  .journey h3 .st {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+    font-weight: 600; letter-spacing: 0.1em; margin-right: 0.6rem;
+  }
+  .journey li.gate h3 .st { color: var(--gate); }
+  .journey p { margin: 0.3rem 0 0; color: var(--muted); max-width: 36rem; font-size: 0.95rem; }
+  .journey li.gate p strong { color: var(--gate); }
+
+  /* ---------- guardrails ---------- */
+  .rails { list-style: none; margin: 2rem 0 0; padding: 0; max-width: 40rem; }
+  .rails li {
+    display: grid; grid-template-columns: 1.6rem 1fr; gap: 1rem;
+    padding: 1.1rem 0; border-bottom: 1px solid var(--faint);
+  }
+  .rails li:first-child { border-top: 1px solid var(--faint); }
+  .rails .sig {
+    width: 1.1rem; height: 1.1rem; border-radius: 50%; margin-top: 0.35rem;
+    background: var(--gate-soft); border: 3px solid var(--gate); box-sizing: border-box;
+  }
+  .rails b { display: block; font-weight: 650; }
+  .rails span { color: var(--muted); font-size: 0.93rem; }
+
+  /* ---------- personalization arcs ---------- */
+  .tuned { display: flex; flex-wrap: wrap; gap: 2.5rem 4rem; align-items: center; margin-top: 2rem; }
+  .arcs { flex: 0 0 auto; }
+  .arcs path { fill: none; stroke-width: 7; stroke-linecap: round; }
+  .arcs .a1 { stroke: var(--line); }
+  .arcs .a2 { stroke: var(--line); opacity: 0.72; }
+  .arcs .a3 { stroke: var(--line); opacity: 0.46; }
+  .arcs .a4 { stroke: var(--line); opacity: 0.30; stroke-dasharray: 2 12; }
+  .arcs circle { fill: var(--gate); }
+  .layers { list-style: none; margin: 0; padding: 0; flex: 1 1 20rem; min-width: 17rem; }
+  .layers li { display: grid; grid-template-columns: 1.1rem 1fr; gap: 0.9rem; padding: 0.55rem 0; }
+  .layers .key { width: 0.85rem; height: 0.85rem; border-radius: 50%; background: var(--line); margin-top: 0.42rem; }
+  .layers li:nth-child(2) .key { opacity: 0.72; }
+  .layers li:nth-child(3) .key { opacity: 0.46; }
+  .layers li:nth-child(4) .key { opacity: 0.3; border: 2px dashed var(--line); background: transparent; box-sizing: border-box; }
+  .layers li:nth-child(5) .key { background: var(--gate); }
+  .layers b { font-weight: 650; }
+  .layers span { color: var(--muted); font-size: 0.93rem; display: block; }
+
+  .navcur {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  /* ---------- next stop ---------- */
+  .nextstop {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-top: 4.5rem; padding: 1.5rem 1.8rem;
+    border: 1px solid var(--faint); border-radius: 12px;
+    text-decoration: none; color: var(--ink);
+  }
+  .nextstop:hover { border-color: var(--line); }
+  .nextstop svg { flex: 0 0 auto; }
+  .nextstop .ns-track { stroke: var(--line); stroke-width: 4; stroke-linecap: round; fill: none; }
+  .nextstop .ns-stop { fill: var(--paper); stroke: var(--line); stroke-width: 3.5; }
+  .nextstop .ns-body { flex: 1 1 auto; min-width: 0; }
+  .nextstop .ns-eyebrow {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600; display: block;
+  }
+  .nextstop .ns-title { font-weight: 650; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .nextstop .ns-sub { display: block; color: var(--muted); font-size: 0.92rem; margin-top: 0.15rem; }
+  .nextstop .ns-arrow {
+    font-family: var(--mono); font-size: 1.5rem; color: var(--line);
+    transition: transform 0.18s ease; flex: 0 0 auto;
+  }
+  .nextstop:hover .ns-arrow { transform: translateX(6px); }
+  @media (max-width: 600px) { .nextstop svg { display: none; } }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--faint);
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  }
+  a { color: var(--line); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--line); outline-offset: 3px; }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KERQNNZTGQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KERQNNZTGQ');
+</script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="topbar">
+    <a class="wordmark" href="https://drim1561.github.io" style="text-decoration:none;">the-pipeline_</a>
+    <nav class="topnav">
+      <a class="backlink" href="./">dashboard</a>
+      <span class="navcur">about</span>
+      <a class="backlink" href="docs.html">docs</a>
+      <a class="backlink" href="https://drim1561.github.io">portfolio</a>
+    </nav>
+  </div>
+  <h1>A job search with a copilot, not an autopilot.</h1>
+  <p class="dek">the-pipeline is a personal agentic system I built on Claude Code over
+  months of daily job searching. It drafts, checks, tracks, and preps everything, and it
+  submits <strong>nothing</strong>. Every send button in this process is pressed by me.</p>
+
+  <div class="mapbox" role="img" aria-label="Transit-style map of the application journey: capture, screen, tailor, review, a highlighted human gate where Daniel submits, then track, triage, and prep. The line terminates at an archive, never a delete.">
+  <svg class="linemap" viewBox="0 0 960 210" width="960" height="210" aria-hidden="true">
+    <path class="track" pathLength="1000"
+      d="M40,135 C75,135 100,90 135,90 S195,135 230,135 S290,90 325,90 S385,135 420,135 S480,90 515,90 S575,135 610,135 S670,90 705,90 S765,135 800,135 S880,120 920,120"/>
+    <g class="s1"><circle class="stop" cx="135" cy="90" r="9"/>
+      <text x="135" y="64" text-anchor="middle">CAPTURE</text>
+      <text class="sub" x="135" y="48" text-anchor="middle">posting verified</text></g>
+    <g class="s2"><circle class="stop" cx="230" cy="135" r="9"/>
+      <text x="230" y="170" text-anchor="middle">SCREEN</text>
+      <text class="sub" x="230" y="186" text-anchor="middle">fit scored 1-4</text></g>
+    <g class="s3"><circle class="stop" cx="325" cy="90" r="9"/>
+      <text x="325" y="64" text-anchor="middle">TAILOR</text>
+      <text class="sub" x="325" y="48" text-anchor="middle">facts locked</text></g>
+    <g class="s4"><circle class="stop" cx="420" cy="135" r="9"/>
+      <text x="420" y="170" text-anchor="middle">REVIEW</text>
+      <text class="sub" x="420" y="186" text-anchor="middle">independent QA</text></g>
+    <g class="s5"><circle class="gatering" cx="515" cy="90" r="14"/><circle class="gatecore" cx="515" cy="90" r="5"/>
+      <text class="gatelabel" x="515" y="56" text-anchor="middle">I SUBMIT</text>
+      <text class="sub" x="515" y="40" text-anchor="middle">the human gate</text></g>
+    <g class="s6"><circle class="stop" cx="610" cy="135" r="9"/>
+      <text x="610" y="170" text-anchor="middle">TRACK</text>
+      <text class="sub" x="610" y="186" text-anchor="middle">atomic writes</text></g>
+    <g class="s7"><circle class="stop" cx="705" cy="90" r="9"/>
+      <text x="705" y="64" text-anchor="middle">TRIAGE</text>
+      <text class="sub" x="705" y="48" text-anchor="middle">replies as drafts</text></g>
+    <g class="s8"><circle class="stop" cx="800" cy="135" r="9"/>
+      <text x="800" y="170" text-anchor="middle">PREP</text>
+      <text class="sub" x="800" y="186" text-anchor="middle">stories + debriefs</text>
+      <text x="920" y="105" text-anchor="middle">ARCHIVE</text>
+      <text class="sub" x="932" y="140" text-anchor="middle">moved, never deleted</text>
+      <path class="track" d="M914,112 L926,128 M926,112 L914,128" style="stroke-width:4"/></g>
+  </svg>
+  </div>
+</header>
+
+<section>
+  <span class="eyebrow">The line, stop by stop</span>
+  <h2>What actually happens between a posting and an interview</h2>
+  <p class="lede">Each stop is a small workflow I can run with one command. Skills only
+  load when called, specialist agents handle one bounded job each, and anything
+  mechanical runs as plain Python with no model involved.</p>
+
+  <ul class="journey">
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 1</span>Capture</h3>
+      <p>A job posting goes in. Details are checked against the official listing before
+      anything else happens, because scraped job data lies more often than you'd think.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 2</span>Screen</h3>
+      <p>A screener agent scores the role against my real stack and targets and answers
+      one question: is this worth tailoring for? A fast no is a feature.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 3</span>Tailor</h3>
+      <p>The resume is rewritten toward the role's language, drawing only from a locked
+      file of verified experience. Numbers cannot drift and claims cannot grow.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 4</span>Review</h3>
+      <p>A second, independent agent plays QA: every figure checked against the source of
+      truth, invented claims failed, and a softer check that it still sounds like me.</p></li>
+    <li class="gate"><span class="dot"></span>
+      <h3><span class="st">THE GATE</span>I read it. I submit it.</h3>
+      <p><strong>The system has no way to apply on my behalf.</strong> It stages a
+      finished package and stops. Reading the final documents and pressing submit is
+      mine, every single time.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 5</span>Track</h3>
+      <p>After I submit, one guarded script records it: the tracker updates atomically, an
+      exact snapshot of what was sent is preserved, and a follow-up lands on my calendar.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 6</span>Triage</h3>
+      <p>It sweeps my inbox, classifies recruiter and ATS replies, and reconciles them
+      against the tracker. Suggested responses are staged as drafts. Sending is mine.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">STOP 7</span>Prep and debrief</h3>
+      <p>Interview prep is built from my own story library, not generic advice. Afterwards
+      it logs what was asked, and a coaching layer grades the transcript so the next
+      round starts sharper than the last.</p></li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">Where it always stops</span>
+  <h2>The guardrails are the point</h2>
+  <p class="lede">Autonomy is easy to demo and hard to trust. These rules are wired into
+  the system itself, not into good intentions.</p>
+  <ul class="rails">
+    <li><span class="sig"></span><div>
+      <b>It never submits, sends, or posts.</b>
+      <span>Applications, messages, thank-you notes: all of it stops as a staged draft.
+      There is no code path that sends anything anywhere.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>It never invents experience.</b>
+      <span>Every claim traces to one canonical fact file, and a reviewer agent fails any
+      draft that stretches past it. The most useful thing it does is say no to itself.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>It never deletes.</b>
+      <span>Files move to archives with their full history. Closed applications keep
+      every document, debrief, and snapshot they ever produced.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>One writer touches the tracker.</b>
+      <span>A single script with atomic writes, a stage-downgrade guard, and
+      verification after every write. A real bad write early on taught me this one.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>Guardrails warn, humans decide.</b>
+      <span>Style and safety checks flag problems without blocking work. The system makes
+      issues visible; it does not make choices.</span></div></li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">Tuned to one person</span>
+  <h2>Months of use made it mine</h2>
+  <p class="lede">The interesting part was never automation. It's that every correction I
+  gave it became a permanent part of how it works, layer by layer.</p>
+  <div class="tuned">
+    <svg class="arcs" viewBox="0 0 260 150" width="260" height="150" aria-hidden="true">
+      <path class="a4" d="M10,145 A120,120 0 0 1 250,145"/>
+      <path class="a3" d="M40,145 A90,90 0 0 1 220,145"/>
+      <path class="a2" d="M70,145 A60,60 0 0 1 190,145"/>
+      <path class="a1" d="M100,145 A30,30 0 0 1 160,145"/>
+      <circle cx="130" cy="145" r="7"/>
+    </svg>
+    <ul class="layers">
+      <li><span class="key"></span><div><b>Verified facts, locked.</b>
+        <span>Six years of real work in one canonical file. Model counts, project scope,
+        the honest nuances included.</span></div></li>
+      <li><span class="key"></span><div><b>My voice, profiled.</b>
+        <span>A writing profile distilled from things I actually wrote. It flags the tells
+        of machine writing, right down to banning em-dashes.</span></div></li>
+      <li><span class="key"></span><div><b>Eleven stories, sourced.</b>
+        <span>A STAR story library grounded in real performance reviews, each with a
+        rehearsed closing line, fed into every prep guide.</span></div></li>
+      <li><span class="key"></span><div><b>Feedback, remembered.</b>
+        <span>When I correct it, the correction is written to memory and holds across
+        sessions. The dashed ring keeps growing.</span></div></li>
+      <li><span class="key"></span><div><b>Me, at the center.</b>
+        <span>The one component that ships anything.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<a class="nextstop" href="./">
+  <svg width="54" height="26" viewBox="0 0 54 26" aria-hidden="true">
+    <path class="ns-track" d="M2,13 H30"/><circle class="ns-stop" cx="42" cy="13" r="8"/>
+  </svg>
+  <span class="ns-body">
+    <span class="ns-eyebrow">next stop</span>
+    <span class="ns-title">See it live</span>
+    <span class="ns-sub">The numbers update themselves after every working session.</span>
+  </span>
+  <span class="ns-arrow" aria-hidden="true">&rarr;</span>
+</a>
+
+<footer>
+  <span>built on claude code &middot; 2026</span>
+  <span><a href="./">live dashboard</a></span>
+  <span><a href="docs.html">documentation</a></span>
+  <span><a href="https://drim1561.github.io">daniel rim &middot; portfolio</a></span>
+</footer>
+
+</div>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6366623e7b5f4c34bed976edca4778a6"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
