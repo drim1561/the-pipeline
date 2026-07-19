@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='16'%20cy='16'%20r='12'%20fill='none'%20stroke='%232b50e0'%20stroke-width='4'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='4'%20fill='%23c9511d'/%3E%3C/svg%3E">
+<title>the-pipeline — documentation</title>
+<style>
+  :root {
+    --paper: #f6f7f5;
+    --ink: #1a1d27;
+    --muted: #5d6373;
+    --faint: #d8dbe4;
+    --line: #2b50e0;
+    --line-soft: #dfe5fb;
+    --gate: #c9511d;
+    --gate-soft: #f8e6dc;
+    --mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+    --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+      --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f7f5; --ink: #1a1d27; --muted: #5d6373; --faint: #d8dbe4;
+    --line: #2b50e0; --line-soft: #dfe5fb; --gate: #c9511d; --gate-soft: #f8e6dc;
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161d; --ink: #e9eaf1; --muted: #9ba1b3; --faint: #2c3040;
+    --line: #8ca4ff; --line-soft: #232a45; --gate: #e8875a; --gate-soft: #3a2418;
+  }
+
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.7;
+    padding: 4rem 1.25rem 5rem;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: baseline;
+            gap: 0.5rem 2rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .topnav { display: flex; gap: 1.6rem; flex-wrap: wrap; }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.06em; color: var(--line);
+  }
+  .backlink {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--line); text-underline-offset: 3px;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.12; font-weight: 650;
+    letter-spacing: -0.02em; margin: 0.75rem 0 1rem; text-wrap: balance;
+    max-width: 22ch;
+  }
+  .dek { font-size: 1.1rem; color: var(--muted); margin: 0; max-width: 38rem; }
+  .dek strong { color: var(--ink); font-weight: 600; }
+  .stamp {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-top: 1.6rem;
+  }
+
+  section { margin-top: 4.5rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600;
+    display: block; margin-bottom: 0.6rem;
+  }
+  h2 {
+    font-size: 1.55rem; font-weight: 650; letter-spacing: -0.015em;
+    margin: 0 0 0.5rem; text-wrap: balance;
+  }
+  .lede { color: var(--muted); margin: 0 0 2rem; max-width: 38rem; }
+  .kicker {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+    display: block; margin: 2.8rem 0 0.4rem;
+  }
+  .note {
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.03em; line-height: 1.7; margin-top: 1.2rem; max-width: 46rem;
+  }
+
+  /* ---------- tables ---------- */
+  .twrap { overflow-x: auto; }
+  .itable { width: 100%; border-collapse: collapse; margin-top: 0.6rem; font-size: 0.93rem; }
+  .itable th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+    text-align: left; padding: 0.5rem 1.2rem 0.5rem 0; border-bottom: 1px solid var(--faint);
+    white-space: nowrap;
+  }
+  .itable td {
+    padding: 0.6rem 1.2rem 0.6rem 0; border-bottom: 1px solid var(--faint);
+    vertical-align: top;
+  }
+  .itable td.co { font-weight: 650; white-space: nowrap; font-family: var(--mono); font-size: 0.85rem; }
+  .itable td.mut { color: var(--muted); }
+
+  /* ---------- journey rail ---------- */
+  .journey { list-style: none; margin: 2.2rem 0 0; padding: 0; }
+  .journey li {
+    display: grid; grid-template-columns: 3rem 1fr; gap: 0 1rem;
+    position: relative; padding-bottom: 2rem;
+  }
+  .journey li::before {
+    content: ""; position: absolute; left: 1.4rem; top: 0.4rem; bottom: -0.4rem;
+    width: 4px; background: var(--line); border-radius: 2px;
+  }
+  .journey li:last-child::before { bottom: auto; height: 1rem; }
+  .journey .dot {
+    position: relative; z-index: 1; margin-top: 0.35rem;
+    width: 1rem; height: 1rem; border-radius: 50%; justify-self: center;
+    background: var(--paper); border: 4px solid var(--line); box-sizing: border-box;
+    grid-row: 1 / span 2;
+  }
+  .journey li.gate .dot {
+    width: 1.5rem; height: 1.5rem; margin-top: 0.15rem;
+    border-color: var(--gate); box-shadow: 0 0 0 5px var(--gate-soft);
+  }
+  .journey h3 {
+    margin: 0; font-size: 1.02rem; font-weight: 650; letter-spacing: -0.005em;
+  }
+  .journey h3 .st {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--line);
+    font-weight: 600; letter-spacing: 0.1em; margin-right: 0.6rem;
+  }
+  .journey li.gate h3 .st { color: var(--gate); }
+  .journey p { margin: 0.3rem 0 0; color: var(--muted); max-width: 36rem; font-size: 0.95rem; }
+
+  /* ---------- rails ---------- */
+  .rails { list-style: none; margin: 2rem 0 0; padding: 0; max-width: 40rem; }
+  .rails li {
+    display: grid; grid-template-columns: 1.6rem 1fr; gap: 1rem;
+    padding: 1.1rem 0; border-bottom: 1px solid var(--faint);
+  }
+  .rails li:first-child { border-top: 1px solid var(--faint); }
+  .rails .sig {
+    width: 1.1rem; height: 1.1rem; border-radius: 50%; margin-top: 0.35rem;
+    background: var(--gate-soft); border: 3px solid var(--gate); box-sizing: border-box;
+  }
+  .rails b { display: block; font-weight: 650; }
+  .rails span { color: var(--muted); font-size: 0.93rem; }
+
+  /* ---------- arcs + layers ---------- */
+  .tuned { display: flex; flex-wrap: wrap; gap: 2.5rem 4rem; align-items: center; margin-top: 2rem; }
+  .arcs { flex: 0 0 auto; }
+  .arcs path { fill: none; stroke-width: 7; stroke-linecap: round; }
+  .arcs .a1 { stroke: var(--line); }
+  .arcs .a2 { stroke: var(--line); opacity: 0.72; }
+  .arcs .a3 { stroke: var(--line); opacity: 0.46; }
+  .arcs .a4 { stroke: var(--line); opacity: 0.30; stroke-dasharray: 2 12; }
+  .arcs circle { fill: var(--gate); }
+  .layers { list-style: none; margin: 0; padding: 0; flex: 1 1 20rem; min-width: 17rem; }
+  .layers li { display: grid; grid-template-columns: 1.1rem 1fr; gap: 0.9rem; padding: 0.55rem 0; }
+  .layers .key { width: 0.85rem; height: 0.85rem; border-radius: 50%; background: var(--line); margin-top: 0.42rem; }
+  .layers li:nth-child(2) .key { opacity: 0.72; }
+  .layers li:nth-child(3) .key { opacity: 0.46; }
+  .layers li:nth-child(4) .key { opacity: 0.3; border: 2px dashed var(--line); background: transparent; box-sizing: border-box; }
+  .layers li:nth-child(5) .key { background: var(--gate); }
+  .layers b { font-weight: 650; }
+  .layers span { color: var(--muted); font-size: 0.93rem; display: block; }
+
+  .navcur {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  /* ---------- next stop ---------- */
+  .nextstop {
+    display: flex; align-items: center; gap: 1.4rem;
+    margin-top: 4.5rem; padding: 1.5rem 1.8rem;
+    border: 1px solid var(--faint); border-radius: 12px;
+    text-decoration: none; color: var(--ink);
+  }
+  .nextstop:hover { border-color: var(--line); }
+  .nextstop svg { flex: 0 0 auto; }
+  .nextstop .ns-track { stroke: var(--line); stroke-width: 4; stroke-linecap: round; fill: none; }
+  .nextstop .ns-stop { fill: var(--paper); stroke: var(--line); stroke-width: 3.5; }
+  .nextstop .ns-body { flex: 1 1 auto; min-width: 0; }
+  .nextstop .ns-eyebrow {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--line); font-weight: 600; display: block;
+  }
+  .nextstop .ns-title { font-weight: 650; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .nextstop .ns-sub { display: block; color: var(--muted); font-size: 0.92rem; margin-top: 0.15rem; }
+  .nextstop .ns-arrow {
+    font-family: var(--mono); font-size: 1.5rem; color: var(--line);
+    transition: transform 0.18s ease; flex: 0 0 auto;
+  }
+  .nextstop:hover .ns-arrow { transform: translateX(6px); }
+  @media (max-width: 600px) { .nextstop svg { display: none; } }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--faint);
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.04em; display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  }
+  a { color: var(--line); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--line); outline-offset: 3px; }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KERQNNZTGQ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KERQNNZTGQ');
+</script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="topbar">
+    <a class="wordmark" href="https://drim1561.github.io" style="text-decoration:none;">the-pipeline_</a>
+    <nav class="topnav">
+      <a class="backlink" href="./">dashboard</a>
+      <a class="backlink" href="overview.html">about</a>
+      <span class="navcur">docs</span>
+      <a class="backlink" href="https://drim1561.github.io">portfolio</a>
+    </nav>
+  </div>
+  <h1>How the-pipeline works.</h1>
+  <p class="dek">The inner workings of the copilot: the moving parts, the loop that runs
+  around every session, and where the system keeps its memory.
+  <strong>Everything here warns; only one thing decides,</strong> and he is not software.</p>
+  <p class="stamp">documentation &middot; updated july 2026</p>
+</header>
+
+<section>
+  <span class="eyebrow">The moving parts</span>
+  <h2>Three tiers, deliberately different jobs</h2>
+  <p class="lede">The design rule the whole system follows: push work down this table.
+  If a check is mechanical, it belongs in a script, not in a prompt.</p>
+  <div class="twrap">
+  <table class="itable">
+    <thead><tr><th>Part</th><th>What it is</th><th>Cost when idle</th></tr></thead>
+    <tbody>
+      <tr><td class="co">skills</td>
+          <td>Procedural workflows that load only when invoked</td>
+          <td class="mut">zero until the command is typed</td></tr>
+      <tr><td class="co">subagents</td>
+          <td>Fresh-context specialists dispatched for one bounded job, mostly read-only</td>
+          <td class="mut">one spawn each, on the smallest model that does the job</td></tr>
+      <tr><td class="co">scripts + hooks</td>
+          <td>Plain Python that needs no model at all</td>
+          <td class="mut">zero tokens, ever</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Skills</span>
+  <h2>Seven commands, one per moment of the search</h2>
+  <p class="lede">Each is a slash command that loads its workflow only when called.
+  The orange stop is the one that only records what a human already did.</p>
+  <ul class="journey">
+    <li><span class="dot"></span>
+      <h3><span class="st">/new-application</span>Scaffold</h3>
+      <p>Turns a job posting into a tailored application: verify the posting, screen the
+      fit, draft against the locked fact file, run the independent QA gate. Ends staged,
+      never sent.</p></li>
+    <li class="gate"><span class="dot"></span>
+      <h3><span class="st">/submit-application</span>Record</h3>
+      <p>Runs after the human presses submit, never before. One guarded script writes the
+      tracker, an exact snapshot of what was sent is preserved, a follow-up lands on the
+      calendar, and the channel it came through is recorded.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">/triage-inbox</span>Reconcile</h3>
+      <p>Sweeps the inbox, classifies recruiter and ATS replies, and reconciles them
+      against the tracker. Suggested responses are staged as drafts.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">/prep-interview</span>Prepare</h3>
+      <p>Builds a study card from a curated story library, the job description, and
+      every prior round's debrief, so no story gets told twice to the same company.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">/log-interview</span>Debrief</h3>
+      <p>Post-interview capture: what was asked, how it went, stage advanced in the
+      tracker, thank-you note staged for review.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">/review-interview</span>Coach</h3>
+      <p>The coaching layer. Grades a call transcript against a storytelling playbook
+      and tracks recurring themes across interviews, honestly.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">/drill-story</span>Rehearse</h3>
+      <p>Practice loop: tell a story out loud, paste the voice-to-text, get graded on
+      arc, hedging, and whether the closing line landed.</p></li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">Specialists</span>
+  <h2>Four subagents, one bounded job each</h2>
+  <p class="lede">Each runs in a fresh context with only what it needs, and none of them
+  can write to memory or the tracker.</p>
+  <ul class="layers" style="max-width:40rem">
+    <li><span class="key"></span><div><b>job-fit-screener</b>
+      <span>Scores a posting against the real stack and targets, Tier 1 to 4, before any
+      tailoring time is spent. A fast no is a feature.</span></div></li>
+    <li><span class="key"></span><div><b>application-reviewer</b>
+      <span>The independent QA gate: every figure checked against the fact file, invented
+      claims failed, voice checked against the profile.</span></div></li>
+    <li><span class="key"></span><div><b>company-research</b>
+      <span>A read-only research brief on the company and role before an interview or a
+      letter that warrants one.</span></div></li>
+    <li><span class="key"></span><div><b>tracker-auditor</b>
+      <span>Hygiene: duplicates, stale stages, and mismatches between the tracker and the
+      application folders on disk.</span></div></li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">No model required</span>
+  <h2>The deterministic layer</h2>
+  <p class="lede">Anything mechanical runs as plain Python. Zero tokens, same result
+  every time, and the only code allowed to touch the important files.</p>
+  <div class="twrap">
+  <table class="itable">
+    <thead><tr><th>Script</th><th>Job</th></tr></thead>
+    <tbody>
+      <tr><td class="co">update_pipeline.py</td>
+          <td class="mut">The only writer the tracker has. Atomic saves, a stage-downgrade
+          guard, terminal rows cannot silently reopen, and every submission records how it
+          started.</td></tr>
+      <tr><td class="co">add_lead.py</td>
+          <td class="mut">The leads inventory writer: atomic, deduplicates on posting URL.</td></tr>
+      <tr><td class="co">render_resume.py</td>
+          <td class="mut">Deterministic resume tailoring inside the document itself, plus a
+          warn-only style lint against the resume rulebook.</td></tr>
+      <tr><td class="co">audit_consistency.py</td>
+          <td class="mut">Drift check across instructions, cheatsheet, and config after any
+          toolkit change. Memory that goes stale is worse than no memory.</td></tr>
+      <tr><td class="co">archive_closed_applications.py</td>
+          <td class="mut">Moves closed application folders whole into the archive. Nothing
+          is ever deleted.</td></tr>
+      <tr><td class="co">export_public_toolkit.py</td>
+          <td class="mut">Mirrors the engine to a public repo through an allowlist and a
+          PII scan, so code can be shared without the data ever leaving.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">The session loop</span>
+  <h2>What runs around every conversation</h2>
+  <p class="lede">Hooks fire at fixed moments of every working session. All of them warn;
+  none of them block. This page you are reading is the last step of the loop.</p>
+  <ul class="journey">
+    <li><span class="dot"></span>
+      <h3><span class="st">SESSION START</span>Briefed before work begins</h3>
+      <p>A hook reads the tracker and prints the day's pipeline state, follow-ups due,
+      and the command cheatsheet straight into the session. No cold starts.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">DURING WORK</span>Three guards ride along</h3>
+      <p>A delete guard before any shell command (move, never delete), a style check
+      after edits to letters, and a row-count verification after any tracker write.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">SESSION STOP</span>The pages rebuild themselves</h3>
+      <p>Plain Python re-reads the tracker and rewrites the dashboard pages, then commits
+      a local snapshot of the session's work. No model involved.</p></li>
+    <li><span class="dot"></span>
+      <h3><span class="st">DEPLOY</span>Private and public ship together</h3>
+      <p>The full private dashboard deploys behind a login; this public site gets the
+      shared view with contact names scrubbed on the way out.</p></li>
+    <li class="gate"><span class="dot"></span>
+      <h3><span class="st">SELF-CHECK</span>Failures don't stay silent</h3>
+      <p>Deploy outcomes land in a status file that the next session's briefing reads
+      first. The system notices its own failures across sessions.</p></li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">Memory</span>
+  <h2>Where the system remembers</h2>
+  <p class="lede">Four layers, from most curated to most disposable. Only the index of
+  the middle layer loads by default; everything else loads on demand.</p>
+  <div class="tuned">
+    <svg class="arcs" viewBox="0 0 260 150" width="260" height="150" aria-hidden="true">
+      <path class="a4" d="M10,145 A120,120 0 0 1 250,145"/>
+      <path class="a3" d="M40,145 A90,90 0 0 1 220,145"/>
+      <path class="a2" d="M70,145 A60,60 0 0 1 190,145"/>
+      <path class="a1" d="M100,145 A30,30 0 0 1 160,145"/>
+      <circle cx="130" cy="145" r="7"/>
+    </svg>
+    <ul class="layers">
+      <li><span class="key"></span><div><b>Curated core, versioned in git.</b>
+        <span>Standing instructions, one canonical fact file that every figure traces to,
+        a voice profile, eleven sourced stories.</span></div></li>
+      <li><span class="key"></span><div><b>Auto-memory, one fact per file.</b>
+        <span>Durable preferences and corrections with a one-line index. Only the index
+        loads each session; bodies load when relevant.</span></div></li>
+      <li><span class="key"></span><div><b>Session layer, disposable by design.</b>
+        <span>Transcripts and working buffers, auto-pruned on a schedule.</span></div></li>
+      <li><span class="key"></span><div><b>The staleness audit.</b>
+        <span>A deterministic drift check keeps the layers agreeing with each other,
+        because one fact should live in one place.</span></div></li>
+      <li><span class="key"></span><div><b>The asymmetry that matters.</b>
+        <span>Subagents never see memory. Canonical facts are passed to them explicitly,
+        so a correction must land in their definition files, not just in conversation.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">The invariants</span>
+  <h2>Rules wired in, not hoped for</h2>
+  <p class="lede">These hold everywhere in the system, and each one exists because of a
+  real lesson, not a hypothetical.</p>
+  <ul class="rails">
+    <li><span class="sig"></span><div>
+      <b>One writer touches the tracker.</b>
+      <span>A single script with atomic writes, a downgrade guard, a terminal-reopen
+      guard, and row-count verification after every write.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>Nothing sends without a human.</b>
+      <span>Applications, replies, thank-you notes: everything stops as a staged draft.
+      There is no code path that submits anything.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>Move, never delete.</b>
+      <span>Closed work is archived whole with its full history, and a guard warns on any
+      command that would destroy instead of move.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>One source of truth per fact.</b>
+      <span>Every number on the dashboard and in every document traces to a single
+      canonical file. Figures cannot drift and claims cannot grow.</span></div></li>
+    <li><span class="sig"></span><div>
+      <b>Hooks warn, humans decide.</b>
+      <span>Every automated check is advisory. The system makes problems visible; it does
+      not make choices.</span></div></li>
+  </ul>
+</section>
+
+<a class="nextstop" href="https://drim1561.github.io">
+  <svg width="54" height="26" viewBox="0 0 54 26" aria-hidden="true">
+    <path class="ns-track" d="M2,13 H30"/><circle class="ns-stop" cx="42" cy="13" r="8"/>
+  </svg>
+  <span class="ns-body">
+    <span class="ns-eyebrow">next stop</span>
+    <span class="ns-title">Back to the portfolio</span>
+    <span class="ns-sub">The person who presses submit.</span>
+  </span>
+  <span class="ns-arrow" aria-hidden="true">&rarr;</span>
+</a>
+
+<footer>
+  <span>built on claude code &middot; 2026</span>
+  <span><a href="./">live dashboard</a></span>
+  <span><a href="overview.html">about the-pipeline</a></span>
+  <span><a href="https://drim1561.github.io">daniel rim &middot; portfolio</a></span>
+</footer>
+
+</div>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6366623e7b5f4c34bed976edca4778a6"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
