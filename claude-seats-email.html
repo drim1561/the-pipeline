@@ -1,0 +1,79 @@
+<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.35;color:#000000;">
+
+<p style="margin:0 0 10pt 0;">Hi [Name],</p>
+
+<p style="margin:0 0 10pt 0;">For my usage, I've used Claude Code pretty heavily on my own
+projects in the past couple of months, and what I've built with it lines up almost exactly
+with what we're standing up.</p>
+
+<p style="margin:0 0 6pt 0;"><b>What I've built with it, on my own time</b></p>
+
+<ol style="margin:0 0 10pt 0;padding-left:24pt;">
+  <li style="margin-bottom:6pt;"><b>An agentic workflow system</b>
+    <ul style="margin:4pt 0 0 0;padding-left:20pt;">
+      <li style="margin-bottom:3pt;">Seven slash-command workflows</li>
+      <li style="margin-bottom:3pt;">Four specialist sub-agents that act as review gates</li>
+      <li style="margin-bottom:3pt;">Six session hooks and about ten deterministic Python scripts (~4,500 lines)</li>
+      <li style="margin-bottom:3pt;">Runs a full intake-to-outcome process end to end: capture,
+          score, draft, independent QA, record, reconcile inbox replies, report</li>
+      <li style="margin-bottom:3pt;">The reporting layer rebuilds itself from the source data
+          after every working session. No manual refresh, and no model involved in the rebuild,
+          so it costs nothing to run.</li>
+    </ul>
+  </li>
+  <li style="margin-bottom:6pt;"><b>A streaming analytics pipeline</b>
+    <ul style="margin:4pt 0 0 0;padding-left:20pt;">
+      <li style="margin-bottom:3pt;"><b>Ingest:</b> public API and ATS sources into Redpanda, loaded to Snowflake with dlt</li>
+      <li style="margin-bottom:3pt;"><b>Modeling:</b> dbt, staging to intermediate to marts, with tests</li>
+      <li style="margin-bottom:3pt;"><b>Enrichment:</b> Claude API pulls skills and salary out of free text and scores each record</li>
+      <li style="margin-bottom:3pt;"><b>Orchestration:</b> Dagster runs the full graph every four hours</li>
+      <li style="margin-bottom:3pt;"><b>Serving:</b> an Evidence.dev report site</li>
+      <li style="margin-bottom:3pt;"><b>Infrastructure:</b> Terraform managed, with a credit-cap monitor</li>
+    </ul>
+  </li>
+</ol>
+
+<p style="margin:0 0 10pt 0;">Both are running systems with real data in them, built solo and
+in phases over a few months.</p>
+
+<p style="margin:0 0 6pt 0;"><b>Where it maps to what we're building here</b></p>
+
+<ul style="margin:0 0 10pt 0;padding-left:24pt;">
+  <li style="margin-bottom:4pt;"><b>dbt and warehouse work:</b> drafting models, tests, and
+      documentation, and getting up to speed in code I didn't write.</li>
+  <li style="margin-bottom:4pt;"><b>New processes,</b> the point I'd push hardest. A process
+      that lives in someone's head gets done differently every time. Written as a skill, it
+      becomes a command anyone on the team runs the same way, with the same checks. Worth
+      capturing now, while we're still defining them.</li>
+  <li style="margin-bottom:4pt;"><b>Recurring reporting:</b> regenerated from the source data
+      instead of rebuilt by hand each cycle.</li>
+  <li style="margin-bottom:4pt;"><b>Internal agents:</b> bounded reviewers. A QA gate that
+      checks figures against a source of truth, or a hygiene agent that flags stale and
+      duplicated records.</li>
+</ul>
+
+<p style="margin:0 0 6pt 0;"><b>Cost</b></p>
+
+<p style="margin:0 0 10pt 0;">A Team seat is roughly $25 per user per month, closer to $20
+annually, and Claude Code is included in the seat. There's a higher-usage tier near $100 for
+heavy users. Current list pricing is worth confirming, but the order of magnitude is that one
+seat costs less than an hour of billable time a month.</p>
+
+<p style="margin:0 0 6pt 0;"><b>What I'd ask for</b></p>
+
+<p style="margin:0 0 10pt 0;">[N] seats for a 60-day pilot. By the end of it I'd commit to two
+things: at least two of our recurring processes converted into documented workflows the whole
+team can run, and a short write-up of hours saved and where it didn't help, so expanding or
+dropping it is an evidence call.</p>
+
+<p style="margin:0 0 6pt 0;"><b>On data handling, since it will come up</b></p>
+
+<p style="margin:0 0 10pt 0;">The system I built has no code path that sends anything on its
+own. Every outbound action stops as a draft for a human to approve, and I'd build anything
+here the same way. Business plans also run under commercial terms where inputs aren't used for
+model training by default.</p>
+
+<p style="margin:0 0 4pt 0;">Thanks,</p>
+<p style="margin:0;">[Your name]</p>
+
+</div>
