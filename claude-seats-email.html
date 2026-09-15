@@ -39,17 +39,36 @@ in phases over a few months.</p>
 <p style="margin:0 0 6pt 0;"><b>Where it maps to what we're building here</b></p>
 
 <ul style="margin:0 0 10pt 0;padding-left:24pt;">
-  <li style="margin-bottom:4pt;"><b>dbt and warehouse work:</b> drafting models, tests, and
-      documentation, and getting up to speed in code I didn't write.</li>
-  <li style="margin-bottom:4pt;"><b>New processes,</b> the point I'd push hardest. A process
-      that lives in someone's head gets done differently every time. Written as a skill, it
-      becomes a command anyone on the team runs the same way, with the same checks. Worth
-      capturing now, while we're still defining them.</li>
-  <li style="margin-bottom:4pt;"><b>Recurring reporting:</b> regenerated from the source data
-      instead of rebuilt by hand each cycle.</li>
-  <li style="margin-bottom:4pt;"><b>Internal agents:</b> bounded reviewers. A QA gate that
-      checks figures against a source of truth, or a hygiene agent that flags stale and
-      duplicated records.</li>
+  <li style="margin-bottom:6pt;"><b>Getting up to speed, which is where I am now.</b> The stack
+      works, but it's spread across several places and a lot of the business logic only exists
+      inside the views themselves. Claude Code reads the actual SQL and traces what depends on
+      what, so a mart view built from eight or more stacked CTEs becomes something I can map in
+      an hour instead of an afternoon. That's the difference between learning this stack over
+      months and learning it over weeks.</li>
+
+  <li style="margin-bottom:6pt;"><b>Designing the foundational layer.</b> As the medallion
+      conversations get real, the hard part is deciding where the bronze, silver, and gold
+      boundaries fall and what belongs in each. That judgment is mine. Everything around it
+      (drafting the model breakdown, the schema files, the tests, the naming conventions, and
+      writing it up clearly enough that the team can push back on it) is where the hours
+      actually go, and it's where I move several times faster.</li>
+
+  <li style="margin-bottom:6pt;"><b>The migration itself.</b> Turning existing views into
+      layered models is mostly mechanical translation, and it's the bulk of the work. It's also
+      the safest possible use of a model: hand it the source view and the target structure, get
+      back the staged models plus tests, then verify the new output matches the old view row for
+      row before anything gets swapped. Nothing replaces a production object on faith.</li>
+
+  <li style="margin-bottom:6pt;"><b>New processes:</b> A process that lives in someone's head
+      gets done differently every time. Written as a skill, it becomes a command anyone on the
+      team runs the same way, with the same checks. Worth capturing now, while we're still
+      defining them.</li>
+
+  <li style="margin-bottom:6pt;"><b>Keeping the foundation from drifting back.</b> Bounded
+      review agents: one that checks a new model against our conventions before it merges, one
+      that flags the same logic implemented in two places. A clean architecture degrades the
+      same way the current one did, one reasonable shortcut at a time. Automated review is how
+      it stays clean after the migration is done.</li>
 </ul>
 
 <p style="margin:0 0 6pt 0;"><b>Cost</b></p>

@@ -40,14 +40,28 @@ Both are running systems with real data in them, built solo and in phases over a
 
 **Where it maps to what we're building here**
 
-- **dbt and warehouse work:** drafting models, tests, and documentation, and getting up to
-  speed in code I didn't write.
-- **New processes,** the point I'd push hardest. A process that lives in someone's head gets
-  done differently every time. Written as a skill, it becomes a command anyone on the team
-  runs the same way, with the same checks. Worth capturing now, while we're still defining them.
-- **Recurring reporting:** regenerated from the source data instead of rebuilt by hand each cycle.
-- **Internal agents:** bounded reviewers. A QA gate that checks figures against a source of
-  truth, or a hygiene agent that flags stale and duplicated records.
+- **Getting up to speed, which is where I am now.** The stack works, but it's spread across
+  several places and a lot of the business logic only exists inside the views themselves.
+  Claude Code reads the actual SQL and traces what depends on what, so a mart view built from
+  eight or more stacked CTEs becomes something I can map in an hour instead of an afternoon.
+  That's the difference between learning this stack over months and learning it over weeks.
+- **Designing the foundational layer.** As the medallion conversations get real, the hard part
+  is deciding where the bronze, silver, and gold boundaries fall and what belongs in each. That
+  judgment is mine. Everything around it (drafting the model breakdown, the schema files, the
+  tests, the naming conventions, and writing it up clearly enough that the team can push back
+  on it) is where the hours actually go, and it's where I move several times faster.
+- **The migration itself.** Turning existing views into layered models is mostly mechanical
+  translation, and it's the bulk of the work. It's also the safest possible use of a model:
+  hand it the source view and the target structure, get back the staged models plus tests, then
+  verify the new output matches the old view row for row before anything gets swapped. Nothing
+  replaces a production object on faith.
+- **New processes:** A process that lives in someone's head gets done differently every time.
+  Written as a skill, it becomes a command anyone on the team runs the same way, with the same
+  checks. Worth capturing now, while we're still defining them.
+- **Keeping the foundation from drifting back.** Bounded review agents: one that checks a new
+  model against our conventions before it merges, one that flags the same logic implemented in
+  two places. A clean architecture degrades the same way the current one did, one reasonable
+  shortcut at a time. Automated review is how it stays clean after the migration is done.
 
 **Cost**
 
@@ -76,9 +90,10 @@ Thanks,
 
 ## If you need it shorter
 
-Cut, in this order: the infrastructure and serving bullets from the pipeline, the recurring
-reporting point, then the data-handling section if the director is already past that question.
-That leaves about 250 words with the ask intact.
+Cut, in this order: the infrastructure and serving bullets from the pipeline, the
+drifting-back bullet, then the data-handling section if the director is already past that
+question. Keep the first three mapping bullets whatever else goes: they are the ones tied to
+work that is actually in front of you.
 
 ## Numbers used, and where they come from
 
