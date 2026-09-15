@@ -63,25 +63,11 @@ Both are running systems with real data in them, built solo and in phases over a
   two places. A clean architecture degrades the same way the current one did, one reasonable
   shortcut at a time. Automated review is how it stays clean after the migration is done.
 
-**Cost**
+Overall, the usage on my side has been hugely beneficial to my efficiency, and that's before any
+of the work above gets built out here. Outside of work I'll point it at anything from a grocery
+list to my next workout plan.
 
-A Team seat is roughly $25 per user per month, closer to $20 annually, and Claude Code is
-included in the seat. There's a higher-usage tier near $100 for heavy users. Current list
-pricing is worth confirming, but the order of magnitude is that one seat costs less than an
-hour of billable time a month.
-
-**What I'd ask for**
-
-[N] seats for a 60-day pilot. By the end of it I'd commit to two things: at least two of our
-recurring processes converted into documented workflows the whole team can run, and a short
-write-up of hours saved and where it didn't help, so expanding or dropping it is an evidence
-call.
-
-**On data handling, since it will come up**
-
-The system I built has no code path that sends anything on its own. Every outbound action
-stops as a draft for a human to approve, and I'd build anything here the same way. Business
-plans also run under commercial terms where inputs aren't used for model training by default.
+If you have any questions, just let me know. Happy to talk through any of the above.
 
 Thanks,
 [Your name]
@@ -90,10 +76,13 @@ Thanks,
 
 ## If you need it shorter
 
-Cut, in this order: the infrastructure and serving bullets from the pipeline, the
-drifting-back bullet, then the data-handling section if the director is already past that
-question. Keep the first three mapping bullets whatever else goes: they are the ones tied to
-work that is actually in front of you.
+Cut, in this order: the infrastructure and serving bullets from the pipeline, then the
+drifting-back bullet. Keep the first three mapping bullets whatever else goes: they are the
+ones tied to work that is actually in front of you.
+
+Cost, the seat ask, and the data-handling paragraph were dropped on purpose. The director is
+collecting usage input to build his own case, so the ask belongs in his write-up, not this one.
+Earlier drafts of those three sections are in this file's git history if he comes back asking.
 
 ## Numbers used, and where they come from
 
